@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Evaluation - OJT Monitoring System</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <!-- Rating Stars CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/rateYo/2.3.2/jquery.rateyo.min.css">
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --primary-hover: #4338ca;
+            --accent-color: #06b6d4;
+            --sidebar-gradient: linear-gradient(180deg, #1e1b4b 0%, #312e81 100%);
+            --card-border-radius: 16px;
+            --transition-speed: 0.25s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%) fixed;
+            background-size: cover;
+            overflow-x: hidden;
+            font-family: 'Plus Jakarta Sans', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            color: #1e293b;
+        }
+
+        /* Sidebar Styles */
+        .wrapper {
+            display: flex;
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        #sidebar {
+            min-width: 280px;
+            max-width: 280px;
+            background: var(--sidebar-gradient);
+            color: #fff;
+            transition: all var(--transition-speed);
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            z-index: 1000;
+            box-shadow: 4px 0 25px rgba(0, 0, 0, 0.25);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #sidebar.active {
+            left: -280px;
+        }
+
+        #sidebar .sidebar-header {
+            padding: 28px 24px;
+            background: rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        #sidebar .sidebar-header h3 {
+            margin-bottom: 6px;
+            font-weight: 700;
+            font-size: 1.35rem;
+            letter-spacing: -0.3px;
+        }
+
+        #sidebar .sidebar-header p {
+            margin-bottom: 0;
+            font-size: 0.825rem;
+            opacity: 0.75;
+        }
+
+        #sidebar ul.components {
+            padding: 20px 12px;
+            list-style: none;
+            margin-bottom: auto;
+        }
+
+        #sidebar ul li {
+            margin-bottom: 6px;
+        }
+
+        #sidebar ul li a {
+            padding: 12px 16px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            color: rgba(255, 255, 255, 0.75);
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all var(--transition-speed);
+        }
+
+        #sidebar ul li a i {
+            margin-right: 14px;
+            font-size: 1.25rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        #sidebar ul li a:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            transform: translateX(4px);
+        }
+
+        #sidebar ul li.active a {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+            color: #ffffff;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4);
+        }
+
+        #sidebar .user-info {
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.25);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        #sidebar .user-info .user-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            color: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        
+        /* Main Content Styles */
+        #content {
+            width: 100%;
+            margin-left: 280px;
+            padding: 20px;
+            min-height: 100vh;
+            transition: all 0.3s ease-in-out;
+        }
+        
+        #content.active {
+            margin-left: 0;
+        }
+        
+        /* Sidebar Toggle Button */
+        #sidebarCollapse {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: #fff;
+            padding: 10px 15px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+            z-index: 1001;
+        }
+        
+        #sidebarCollapse:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+        }
+        
+        .content-wrapper {
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 20px;
+        }
+        
+        /* Evaluation Specific Styles */
+        .evaluation-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .rating-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            transition: all 0.3s;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .rating-card:hover {
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.15);
+            transform: translateY(-2px);
+        }
+        
+        .criteria-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .criteria-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 15px;
+        }
+        
+        .rating-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .rating-item:last-child {
+            border-bottom: none;
+        }
+        
+        .rating-label {
+            font-weight: 500;
+            color: #495057;
+        }
+        
+        .rating-value {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .rating-stars {
+            color: #495057;
+            font-size: 1.2rem;
+        }
+        
+        .rating-score {
+            font-weight: 600;
+            color: #667eea;
+            min-width: 30px;
+            text-align: right;
+        }
+        
+        .student-info-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .student-avatar-lg {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #667eea;
+        }
+        
+        .progress-section {
+            margin-top: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+        }
+        
+        .rating-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .badge-excellent {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .badge-good {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .badge-average {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .badge-poor {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .evaluation-summary {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .summary-score {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #667eea;
+            line-height: 1.2;
+        }
+        
+        .summary-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .comment-box {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            border-left: 4px solid #28a745;
+        }
+        
+        .comment-box.supervisor {
+            border-left-color: #dc3545;
+        }
+        
+        .comment-author {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 5px;
+        }
+        
+        .comment-date {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+        
+        .comment-text {
+            margin-top: 10px;
+            color: #495057;
+        }
+        
+        /* Overlay for mobile */
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+        
+        .overlay.active {
+            opacity: 1;
+        }
+        
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            #sidebar {
+                left: -280px;
+            }
+            
+            #sidebar.active {
+                left: 0;
+            }
+            
+            #content {
+                margin-left: 0 !important;
+            }
+            
+            .rating-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .rating-value {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <!-- Overlay for mobile -->
+        <div class="overlay" onclick="toggleSidebar()"></div>
+        
+        <!-- Left Sidebar Navigation -->
+        <nav id="sidebar">
+            <div class="sidebar-header">
+                <h3><i class="bi bi-building me-2"></i>Tech Solutions Inc.</h3>
+                <p><i class="bi bi-geo-alt-fill me-1"></i>Supervisor Portal</p>
+            </div>
+
+            <ul class="components">
+                <li>
+                    <a href="attendance_approval.html">
+                        <i class="bi bi-calendar-check"></i>
+                        <span>Attendance Approval</span>
+                    </a>
+                </li>
+                <li class="active">
+                    <a href="evaluation.html">
+                        <i class="bi bi-star-fill"></i>
+                        <span>Evaluation</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="message_management.html">
+                        <i class="bi bi-chat-dots-fill"></i>
+                        <span>Messages</span>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="user-info">
+                <div class="d-flex align-items-center">
+                    <div class="user-avatar me-3">
+                        <i class="bi bi-person-circle"></i>
+                    </div>
+                    <div>
+                        <div class="fw-semibold">John Smith</div>
+                    </div>
+                    <a href="../index.html" class="ms-auto text-white" title="Logout">
+                        <i class="bi bi-box-arrow-right fs-5"></i>
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Page Content -->
+        <div id="content">
+            <!-- Top Navigation -->
+            <div class="d-flex align-items-center mb-4">
+                <button type="button" id="sidebarCollapse" class="btn" onclick="toggleSidebar()">
+                    <i class="bi bi-list"></i>
+                </button>
+            </div>
+
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4 text-white">
+                <div>
+                    <h2 class="fw-bold"><i class="bi bi-star-fill me-2"></i>Student Performance Evaluation</h2>
+                    <p class="mb-0">Evaluate and rate student performance during OJT</p>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="content-wrapper">
+                <!-- Tabs for Different Views -->
+                <ul class="nav nav-tabs mb-4" id="evaluationTabs" role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link active" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button">
+                            <i class="bi bi-hourglass-split me-2"></i>Pending Evaluations
+                            <span class="badge bg-warning ms-2">5</span>
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" id="completed-tab" data-bs-toggle="tab" data-bs-target="#completed" type="button">
+                            <i class="bi bi-check-circle me-2"></i>Completed Evaluations
+                            <span class="badge bg-success ms-2">3</span>
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" id="criteria-tab" data-bs-toggle="tab" data-bs-target="#criteria" type="button">
+                            <i class="bi bi-list-check me-2"></i>Evaluation Criteria
+                        </button>
+                    </li>
+                </ul>
+
+                <!-- Tab Content -->
+                <div class="tab-content">
+                    <!-- PENDING EVALUATIONS TAB -->
+                    <div class="tab-pane fade show active" id="pending">
+                        <div class="row">
+                            <!-- Student List for Evaluation -->
+                            <div class="col-md-4">
+                                <div class="student-list-sidebar">
+                                    <h6 class="mb-3">Students Pending Evaluation</h6>
+                                    <div class="list-group" id="pendingStudentList">
+                                        <!-- Student items will be populated by JavaScript -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Evaluation Form -->
+                            <div class="col-md-8">
+                                <div class="rating-card">
+                                    <div id="selectedStudentInfo" class="student-info-card">
+                                        <div class="d-flex align-items-center">
+                                            <img src="../assets/images/user.png" class="student-avatar-lg me-3" alt="avatar">
+                                            <div>
+                                                <h4 class="mb-1" id="selectedStudentName">Select a student to evaluate</h4>
+                                                <p class="mb-1" id="selectedStudentDetails">Student ID: - | Course: -</p>
+                                                <p class="mb-0" id="selectedStudentSchool">School: - </p>
+                                            </div>
+                                        </div>
+                                        <div class="progress-section">
+                                            <div class="d-flex justify-content-between mb-2">
+                                                <span>OJT Progress</span>
+                                                <span id="studentProgress">-</span>
+                                            </div>
+                                            <div class="progress">
+                                                <div class="progress-bar bg-success" id="studentProgressBar" style="width: 0%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Evaluation Form -->
+                                    <form id="evaluationForm">
+                                        <!-- Work Performance Criteria -->
+                                        <div class="criteria-section">
+                                            <div class="criteria-title">
+                                                <i class="bi bi-briefcase me-2"></i>Work Performance (40%)
+                                            </div>
+                                            
+                                            <div class="rating-item">
+                                                <span class="rating-label">Quality of Work</span>
+                                                <div class="rating-value">
+                                                    <span class="rating-stars" onclick="setRating('quality', 1)">★</span>
+                                                    <span class="rating-stars" onclick="setRating('quality', 2)">★</span>
+                                                    <span class="rating-stars" onclick="setRating('quality', 3)">★</span>
+                                                    <span class="rating-stars" onclick="setRating('quality', 4)">★</span>
+                                                    <span class="rating-stars" onclick="setRating('quality', 5)">★</span>
+                                                    <span class="rating-score" id="qualityScore">0.0</span>
+                                                </div>
+                                            </div>
+
+                                            <div class="rating-item">
+                                                <span class="rating-label">Quantity of Work</span>
+                                                <div class="rating-value">
+                                                    <span class="rating-stars" onclick="setRating('quantity', 1)">★</span>
+                                                    <span class="rating-stars" onclick="setRating('quantity', 2)">★</span>
+                                                    <span class="rating-stars" onclick="setRating('quantity', 3)">★</span>
+                                                    <span class="rating-stars" onclick="setRating('quantity', 4)">★</span>
+                                                    <span class="rating-stars" onclick="setRating('quantity', 5)">★</span>
+                                                    <span class="rating-score" id="quantityScore">0.0</span>
+                                                </div>
+                                            </div>
+
+                                            <div class="rating-item">
+                                                <span class="rating-label">Efficiency</span>
+                                                <div class="rating-value">
+                                                    <span class="rating-stars" onclick="setRating('efficiency', 1)">★</span>
+                                                    <span class="rating-stars" onclick="setRating('efficiency', 2)">★</span>
+                                                    <span class="rating-stars" onclick="setRating('efficiency', 3)">★</span>
+                                                    <span class="rating-stars" onclick="setRating('efficiency', 4)">★</span>
+                                                    <span class="rating-stars" onclick="setRating('efficiency', 5)">★</span>
+                                                    <span class="rating-score" id="efficiencyScore">0.0</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Professional Behavior -->
+                                        <div class="criteria-section">
+                                            <div class="criteria-title">
+                                                <i class="bi bi-person-badge me-2"></i>Professional Behavior (30%)
+                                            </div>
+
+                                            <div class="rating-item">
+                                                <span class="rating-label">Attendance & Punctuality</span>
+                                                <div class="rating-value">
+                                                    <span class="rating-stars" onclick="setRating('attendance', 1)">★</span>
+                                                    <span class="rating-stars" onclick="setRating('attendance', 2)">★</span>
+                                                    <span class="rating-stars" onclick="setRating('attendance', 3)">★</span>
+                                                    <span class="rating-stars" onclick="setRating('attendance', 4)">★</span>
+                                                    <span class="rating-stars" onclick="setRating('attendance', 5)">★</span>
+                                                    <span class="rating-score" id="attendanceScore">0.0</span>
+                                                </div>
+                                            </div>
+
+                                            <div class="rating-item">
+                                                <span class="rating-label">Teamwork & Collaboration</span>
+                                                <div class="rating-value">
+                                                    <span class="rating-stars" onclick="setRating('teamwork', 1)">★</span>
+                                                    <span class="rating-stars" onclick="setRating('teamwork', 2)">★</span>
+                                                    <span class="rating-stars" onclick="setRating('teamwork', 3)">★</span>
+                                                    <span class="rating-stars" onclick="setRating('teamwork', 4)">★</span>
+                                                    <span class="rating-stars" onclick="setRating('teamwork', 5)">★</span>
+                                                    <span class="rating-score" id="teamworkScore">0.0</span>
+                                                </div>
+                                            </div>
+
+                                            <div class="rating-item">
+                                                <span class="rating-label">Communication Skills</span>
+                                                <div class="rating-value">
+                                                    <span class="rating-stars" onclick="setRating('communication', 1)">★</span>
+                                                    <span class="rating-stars" onclick="setRating('communication', 2)">★</span>
+                                                    <span class="rating-stars" onclick="setRating('communication', 3)">★</span>
+                                                    <span class="rating-stars" onclick="setRating('communication', 4)">★</span>
+                                                    <span class="rating-stars" onclick="setRating('communication', 5)">★</span>
+                                                    <span class="rating-score" id="communicationScore">0.0</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Technical Skills -->
+                                        <div class="criteria-section">
+                                            <div class="criteria-title">
+                                                <i class="bi bi-gear me-2"></i>Technical Skills (30%)
+                                            </div>
+
+                                            <div class="rating-item">
+                                                <span class="rating-label">Job Knowledge</span>
+                                                <div class="rating-value">
+                                                    <span class="rating-stars" onclick="setRating('knowledge', 1)">★</span>
+                                                    <span class="rating-stars" onclick="setRating('knowledge', 2)">★</span>
+                                                    <span class="rating-stars" onclick="setRating('knowledge', 3)">★</span>
+                                                    <span class="rating-stars" onclick="setRating('knowledge', 4)">★</span>
+                                                    <span class="rating-stars" onclick="setRating('knowledge', 5)">★</span>
+                                                    <span class="rating-score" id="knowledgeScore">0.0</span>
+                                                </div>
+                                            </div>
+
+                                            <div class="rating-item">
+                                                <span class="rating-label">Problem Solving</span>
+                                                <div class="rating-value">
+                                                    <span class="rating-stars" onclick="setRating('problemSolving', 1)">★</span>
+                                                    <span class="rating-stars" onclick="setRating('problemSolving', 2)">★</span>
+                                                    <span class="rating-stars" onclick="setRating('problemSolving', 3)">★</span>
+                                                    <span class="rating-stars" onclick="setRating('problemSolving', 4)">★</span>
+                                                    <span class="rating-stars" onclick="setRating('problemSolving', 5)">★</span>
+                                                    <span class="rating-score" id="problemSolvingScore">0.0</span>
+                                                </div>
+                                            </div>
+
+                                            <div class="rating-item">
+                                                <span class="rating-label">Initiative & Creativity</span>
+                                                <div class="rating-value">
+                                                    <span class="rating-stars" onclick="setRating('initiative', 1)">★</span>
+                                                    <span class="rating-stars" onclick="setRating('initiative', 2)">★</span>
+                                                    <span class="rating-stars" onclick="setRating('initiative', 3)">★</span>
+                                                    <span class="rating-stars" onclick="setRating('initiative', 4)">★</span>
+                                                    <span class="rating-stars" onclick="setRating('initiative', 5)">★</span>
+                                                    <span class="rating-score" id="initiativeScore">0.0</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Overall Rating -->
+                                        <div class="criteria-section">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span class="criteria-title">Overall Performance Rating</span>
+                                                <div>
+                                                    <span class="display-4 fw-bold text-primary" id="overallRating">0.0</span>
+                                                    <span class="text-muted">/5.0</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Comments Section -->
+                                        <div class="mb-4">
+                                            <label class="form-label fw-semibold">Comments</label>
+                                            <textarea class="form-control" rows="3" placeholder="Enter your evaluation comments here..." id="supervisorComments"></textarea>
+                                        </div>
+
+                                        <div class="mb-4">
+                                            <label class="form-label fw-semibold">Recommendations</label>
+                                            <textarea class="form-control" rows="2" placeholder="Recommendations for improvement..." id="recommendations"></textarea>
+                                        </div>
+
+                                        <!-- Submit Buttons -->
+                                        <div class="d-flex justify-content-end gap-2">
+                                            <button type="button" class="btn btn-secondary" onclick="resetForm()">
+                                                <i class="bi bi-arrow-counterclockwise me-2"></i>Reset
+                                            </button>
+                                            <button type="button" class="btn btn-success" onclick="submitEvaluation()">
+                                                <i class="bi bi-check-circle me-2"></i>Submit Evaluation
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- COMPLETED EVALUATIONS TAB -->
+                    <div class="tab-pane fade" id="completed">
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="completedEvaluationsTable">
+                                <thead class="table-primary">
+                                    <tr>
+                                        <th>Student ID</th>
+                                        <th>Student Name</th>
+                                        <th>School</th>
+                                        <th>Evaluation Period</th>
+                                        <th>Overall Rating</th>
+                                        <th>Performance Level</th>
+                                        <th>Evaluator</th>
+                                        <th>Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="completedEvaluationsBody">
+                                    <!-- Data will be populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- EVALUATION CRITERIA TAB -->
+                    <div class="tab-pane fade" id="criteria">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="rating-card">
+                                    <h5 class="mb-4">Rating Scale</h5>
+                                    <div class="mb-3">
+                                        <p class="mb-2"><span class="badge-excellent rating-badge">5 - Excellent</span></p>
+                                        <p>Exceeds expectations, outstanding performance</p>
+                                    </div>
+                                    <div class="mb-3">
+                                        <p class="mb-2"><span class="badge-good rating-badge">4 - Very Good</span></p>
+                                        <p>Meets and sometimes exceeds expectations</p>
+                                    </div>
+                                    <div class="mb-3">
+                                        <p class="mb-2"><span class="badge-good rating-badge">3 - Good</span></p>
+                                        <p>Consistently meets expectations</p>
+                                    </div>
+                                    <div class="mb-3">
+                                        <p class="mb-2"><span class="badge-average rating-badge">2 - Fair</span></p>
+                                        <p>Partially meets expectations, needs improvement</p>
+                                    </div>
+                                    <div class="mb-3">
+                                        <p class="mb-2"><span class="badge-poor rating-badge">1 - Poor</span></p>
+                                        <p>Does not meet expectations, significant improvement needed</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6"><!-- 
+                                <div class="rating-card">
+                                    <h5 class="mb-4">Weight Distribution</h5>
+                                    <div class="progress mb-3" style="height: 30px;">
+                                        <div class="progress-bar bg-primary" style="width: 40%">Work Performance (40%)</div>
+                                    </div>
+                                    <div class="progress mb-3" style="height: 30px;">
+                                        <div class="progress-bar bg-success" style="width: 30%">Professional Behavior (30%)</div>
+                                    </div>
+                                    <div class="progress mb-3" style="height: 30px;">
+                                        <div class="progress-bar bg-info" style="width: 30%">Technical Skills (30%)</div>
+                                    </div>
+                                </div> -->
+
+                                <div class="rating-card mt-3">
+                                    <h5 class="mb-4">Performance Level Interpretation</h5>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>4.5 - 5.0:</span>
+                                        <span class="badge-excellent rating-badge">Excellent</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>3.5 - 4.4:</span>
+                                        <span class="badge-good rating-badge">Very Good</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>2.5 - 3.4:</span>
+                                        <span class="badge-good rating-badge">Good</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>1.5 - 2.4:</span>
+                                        <span class="badge-average rating-badge">Fair</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>Below 1.5:</span>
+                                        <span class="badge-poor rating-badge">Poor</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <!-- DataTables -->
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        // Initialize DataTables
+        $(document).ready(function() {
+            $('#completedEvaluationsTable').DataTable({
+                pageLength: 10,
+                searching: true,
+                info: true
+            });
+            
+            loadPendingStudents();
+            loadCompletedEvaluations();
+        });
+
+        // Sample data for pending students
+        const pendingStudents = [
+            {
+                id: '2024-001',
+                name: 'Juan Dela Cruz',
+                course: 'BSIT',
+                School: 'West Prime Horizon Institute Inc.',
+                progress: 65,
+                avatar: '../assets/images/user.png'
+            },
+            {
+                id: '2024-002',
+                name: 'Maria Santos',
+                course: 'BSBA',
+                School: 'West Prime Horizon Institute Inc.',
+                progress: 45,
+                avatar: '../assets/images/user.png'
+            },
+            {
+                id: '2024-003',
+                name: 'John Smith',
+                course: 'BSCS',
+                School: 'West Prime Horizon Institute Inc.',
+                progress: 80,
+                avatar: '../assets/images/user.png'
+            },
+            {
+                id: '2024-004',
+                name: 'Anna Reyes',
+                course: 'BSHM',
+                School: 'West Prime Horizon Institute Inc.',
+                progress: 20,
+                avatar: '../assets/images/user.png'
+            },
+            {
+                id: '2024-005',
+                name: 'Pedro Gonzales',
+                course: 'BSA',
+                School: 'West Prime Horizon Institute Inc.',
+                progress: 95,
+                avatar: '../assets/images/user.png'
+            }
+        ];
+
+        // Completed evaluations sample data
+        const completedEvaluations = [
+            {
+                id: '2024-001',
+                name: 'Juan Dela Cruz',
+                School: 'West Prime Horizon Institute Inc.',
+                period: 'Mid-Year 2024',
+                rating: 4.5,
+                level: 'Excellent',
+                evaluator: 'John Smith',
+                date: '2024-03-15',
+                avatar: '../assets/images/user.png'
+            },
+            {
+                id: '2024-002',
+                name: 'Maria Santos',
+                School: 'Business Analytics Co.',
+                period: 'Mid-Year 2024',
+                rating: 3.8,
+                level: 'Very Good',
+                evaluator: 'Maria Santos',
+                date: '2024-03-14',
+                avatar: '../assets/images/user.png'
+            },
+            {
+                id: '2024-003',
+                name: 'John Smith',
+                School: 'Digital Innovations Corp.',
+                period: 'Mid-Year 2024',
+                rating: 4.2,
+                level: 'Very Good',
+                evaluator: 'Robert Chen',
+                date: '2024-03-14',
+                avatar: '../assets/images/user.png'
+            }
+        ];
+
+        // Rating storage
+        let ratings = {
+            quality: 0,
+            quantity: 0,
+            efficiency: 0,
+            attendance: 0,
+            teamwork: 0,
+            communication: 0,
+            knowledge: 0,
+            problemSolving: 0,
+            initiative: 0
+        };
+
+        // Load pending students list
+        function loadPendingStudents() {
+            const listContainer = document.getElementById('pendingStudentList');
+            let html = '';
+            
+            pendingStudents.forEach(student => {
+                html += `
+                    <a href="#" class="list-group-item list-group-item-action" onclick="selectStudent('${student.id}')">
+                        <div class="d-flex align-items-center">
+                            <img src="${student.avatar}" class="student-avatar-sm me-2" alt="avatar" width="10%">
+                            <div>
+                                <div class="fw-semibold">${student.name}</div>
+                                <small class="text-muted">${student.id} - ${student.School}</small>
+                            </div>
+                            <span class="ms-auto badge bg-warning">${student.progress}%</span>
+                        </div>
+                    </a>
+                `;
+            });
+            
+            listContainer.innerHTML = html;
+        }
+
+        // Load completed evaluations
+        function loadCompletedEvaluations() {
+            const tbody = document.getElementById('completedEvaluationsBody');
+            let html = '';
+            
+            completedEvaluations.forEach(eval => {
+                let badgeClass = eval.rating >= 4.5 ? 'badge-excellent' : 
+                               eval.rating >= 3.5 ? 'badge-good' : 
+                               eval.rating >= 2.5 ? 'badge-average' : 'badge-poor';
+                
+                html += `
+                    <tr>
+                        <td>${eval.id}</td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <img src="${eval.avatar}" class="student-avatar-sm me-2" alt="avatar" width=30%>
+                                ${eval.name}
+                            </div>
+                        </td>
+                        <td>${eval.School}</td>
+                        <td>${eval.period}</td>
+                        <td>${eval.rating}</td>
+                        <td><span class="rating-badge ${badgeClass}">${eval.level}</span></td>
+                        <td>${eval.evaluator}</td>
+                        <td>${eval.date}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-info" onclick="viewEvaluation('${eval.id}')">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-primary" onclick="printEvaluation('${eval.id}')">
+                                <i class="bi bi-printer"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html;
+        }
+
+        // Select student for evaluation
+        function selectStudent(studentId) {
+            const student = pendingStudents.find(s => s.id === studentId);
+            if (student) {
+                document.getElementById('selectedStudentName').innerHTML = student.name;
+                document.getElementById('selectedStudentDetails').innerHTML = `Student ID: ${student.id} | Course: ${student.course}`;
+                document.getElementById('selectedStudentSchool').innerHTML = `School: ${student.School}`;
+                document.getElementById('studentProgress').innerHTML = `${student.progress}% Complete`;
+                document.getElementById('studentProgressBar').style.width = student.progress + '%';
+                
+                // Highlight selected item
+                document.querySelectorAll('#pendingStudentList a').forEach(item => {
+                    item.classList.remove('active');
+                });
+                event.currentTarget.classList.add('active');
+            }
+        }
+
+        // Set rating for criteria
+        function setRating(criteria, value) {
+            ratings[criteria] = value;
+            updateRatingStars(criteria, value);
+            calculateOverallRating();
+        }
+
+        // Update rating stars display
+        function updateRatingStars(criteria, value) {
+            const stars = document.querySelectorAll(`[onclick*="setRating('${criteria}"]`);
+            const scoreElement = document.getElementById(criteria + 'Score');
+            
+            stars.forEach((star, index) => {
+                if (index < value) {
+                    star.style.color = '#ffc107';
+                } else {
+                    star.style.color = '#e0e0e0';
+                }
+            });
+            
+            if (scoreElement) {
+                scoreElement.innerHTML = value.toFixed(1);
+            }
+        }
+
+        // Calculate overall rating
+        function calculateOverallRating() {
+            // Weights: Work Performance (40%), Professional Behavior (30%), Technical Skills (30%)
+            const workPerformance = (ratings.quality + ratings.quantity + ratings.efficiency) / 3;
+            const professionalBehavior = (ratings.attendance + ratings.teamwork + ratings.communication) / 3;
+            const technicalSkills = (ratings.knowledge + ratings.problemSolving + ratings.initiative) / 3;
+            
+            const overall = (workPerformance * 0.4) + (professionalBehavior * 0.3) + (technicalSkills * 0.3);
+            
+            document.getElementById('overallRating').innerHTML = overall.toFixed(1);
+            
+            // Update summary stars
+            updateSummaryStars(overall);
+        }
+
+        // Update summary stars
+        function updateSummaryStars(rating) {
+            const avgScore = document.getElementById('avgScore');
+            const avgStars = document.getElementById('avgStars');
+            
+            avgScore.innerHTML = rating.toFixed(1);
+            
+            let stars = '';
+            for (let i = 1; i <= 5; i++) {
+                if (i <= Math.round(rating)) {
+                    stars += '★';
+                } else {
+                    stars += '☆';
+                }
+            }
+            avgStars.innerHTML = stars;
+        }
+
+        // Reset evaluation form
+        function resetForm() {
+            ratings = {
+                quality: 0, quantity: 0, efficiency: 0,
+                attendance: 0, teamwork: 0, communication: 0,
+                knowledge: 0, problemSolving: 0, initiative: 0
+            };
+            
+            // Reset all stars
+            document.querySelectorAll('.rating-stars').forEach(star => {
+                star.style.color = '#e0e0e0';
+            });
+            
+            // Reset scores
+            document.querySelectorAll('.rating-score').forEach(score => {
+                score.innerHTML = '0.0';
+            });
+            
+            document.getElementById('overallRating').innerHTML = '0.0';
+            document.getElementById('supervisorComments').value = '';
+            document.getElementById('recommendations').value = '';
+        }
+
+        // Submit evaluation
+        function submitEvaluation() {
+            const studentName = document.getElementById('selectedStudentName').innerHTML;
+            if (studentName === 'Select a student to evaluate') {
+                Swal.fire({
+                    title: 'View Evaluation',
+                    icon: 'error',
+                    text: 'Please select a student to evaluate',
+                    confirmButtonColor: '#28a745'
+                });
+                return;
+            }
+            
+            const overall = document.getElementById('overallRating').innerHTML;
+            if (overall === '0.0') {
+                Swal.fire({
+                    title: 'View Evaluation',
+                    icon: 'error',
+                    text: 'Please complete the ratings before submitting',
+                    confirmButtonColor: '#28a745'
+                });
+                return;
+            }
+            
+            Swal.fire({
+                title: 'Evaluation Submitted',
+                icon: 'success',
+                text: `Evaluation submitted successfully for ${studentName}!\nOverall Rating: ${overall}`,
+                confirmButtonColor: '#28a745'
+            });
+            resetForm();
+        }
+
+        // Filter evaluations
+        function filterEvaluations() {
+            const filter = document.getElementById('evaluationFilter').value;
+            alert(`Filtering by: ${filter || 'All students'}`);
+        }
+
+        // Print evaluations
+        function printEvaluations() {
+            window.print();
+        }
+
+        // View evaluation
+        function viewEvaluation(id) {
+            // alert(`This will view evaluation details for student #${id}`);
+            Swal.fire({
+                title: 'View Evaluation',
+                text: `This will view evaluation details for student #${id}`,
+                confirmButtonColor: '#28a745'
+            });
+        }
+
+        // Print evaluation
+        function printEvaluation(id) {
+            Swal.fire({
+                title: 'Printing Evaluation',
+                text: `This will print evaluation for student #${id}`,
+                confirmButtonColor: '#28a745'
+            });
+        }
+
+        // Toggle sidebar
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('content').classList.toggle('active');
+            document.querySelector('.overlay').classList.toggle('active');
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                document.getElementById('sidebar').classList.remove('active');
+                document.getElementById('content').classList.remove('active');
+                document.querySelector('.overlay').classList.remove('active');
+            }
+        });
+
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const toggleBtn = document.getElementById('sidebarCollapse');
+            
+            if (window.innerWidth <= 768) {
+                if (!sidebar.contains(event.target) && !toggleBtn.contains(event.target) && sidebar.classList.contains('active')) {
+                    sidebar.classList.remove('active');
+                    document.getElementById('content').classList.remove('active');
+                    document.querySelector('.overlay').classList.remove('active');
+                }
+            }
+        });
+    </script>
+</body>
+</html>

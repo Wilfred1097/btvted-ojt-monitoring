@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OJT Monitoring System - Login</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --brand-primary: #1e3a8a;       /* Deep Navy */
+            --brand-secondary: #0d9488;     /* Modern Teal */
+            --brand-dark: #0f172a;          /* Slate Dark */
+            --brand-accent: #f59e0b;        /* Warm Amber */
+        }
+
+        body {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.88), rgba(30, 58, 138, 0.85)), 
+                        url('assets/images/west-prime.jpg') no-repeat center center fixed;
+            background-size: cover;
+            overflow-x: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+
+        /* Custom Theme Buttons & Badges */
+        .btn-theme-primary {
+            background-color: var(--brand-primary);
+            border-color: var(--brand-primary);
+            color: #ffffff;
+        }
+        .btn-theme-primary:hover, .btn-theme-primary:focus {
+            background-color: #1e40af;
+            border-color: #1e40af;
+            color: #ffffff;
+        }
+
+        .btn-outline-theme {
+            color: var(--brand-primary);
+            border-color: #cbd5e1;
+        }
+        .btn-check:checked + .btn-outline-theme {
+            background-color: var(--brand-primary);
+            border-color: var(--brand-primary);
+            color: #ffffff;
+        }
+
+        .text-theme-primary {
+            color: var(--brand-primary) !important;
+        }
+
+        .dummy-accounts {
+            background-color: #f8fafc;
+            border-radius: 12px;
+            padding: 16px;
+            border-left: 4px solid var(--brand-secondary);
+        }
+        
+        .account-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.25s ease-in-out;
+            cursor: pointer;
+        }
+        
+        .account-item:hover {
+            background-color: #f0fdf4;
+            transform: translateX(4px);
+            border-color: var(--brand-secondary);
+        }
+        
+        .account-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+        
+        /* Role Badges & Colors */
+        .account-icon.student {
+            background-color: #dcfce7;
+            color: #15803d;
+        }
+        .account-icon.adviser {
+            background-color: #e0e7ff;
+            color: #4338ca;
+        }
+        .account-icon.supervisor {
+            background-color: #fef3c7;
+            color: #b45309;
+        }
+        .account-icon.coordinator {
+            background-color: #ccfbf1;
+            color: #0f766e;
+        }
+        
+        .account-details {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .account-role {
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #64748b;
+        }
+        
+        .account-credentials {
+            font-family: monospace;
+            font-size: 0.82rem;
+            font-weight: 500;
+            color: #334155;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .use-account-btn {
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        
+        .account-item:hover .use-account-btn {
+            opacity: 1;
+        }
+
+        .badge-demo {
+            background-color: #fef3c7;
+            color: #92400e;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="bg-light d-flex align-items-center min-vh-100 py-4">
+    <div class="container">
+        <!-- Single Row layout containing 2 Cards -->
+        <div class="row g-4 justify-content-center align-items-stretch">
+            
+            <!-- LEFT CARD: Demo Accounts & System Info -->
+            <div class="col-xl-5 col-lg-6 col-md-6">
+                <div class="card shadow-lg border-0 rounded-4 h-100">
+                    <div class="card-body p-4 p-xl-5 d-flex flex-column justify-content-between">
+                        <div>
+                            <div class="text-center text-md-start mb-4">
+                                <h3 class="fw-bold text-theme-primary mb-1">OJT Monitoring System</h3>
+                                <p class="text-muted small mb-0">West Prime Horizon Institute Inc.</p>
+                            </div>
+
+                            <!-- Dummy Accounts Section -->
+                            <div class="dummy-accounts mb-3">
+                                <div class="d-flex align-items-center mb-3">
+                                    <i class="bi bi-info-circle-fill text-theme-primary me-2"></i>
+                                    <span class="fw-semibold text-dark">Demo Accounts</span>
+                                    <span class="badge badge-demo ms-auto">For Testing Only</span>
+                                </div>
+                                
+                                <!-- Student Account -->
+                                <div class="account-item" onclick="useAccount('student', 'student@wphi.edu', 'student123')">
+                                    <div class="account-icon student">
+                                        <i class="bi bi-person-fill"></i>
+                                    </div>
+                                    <div class="account-details">
+                                        <div class="account-role">Student Account</div>
+                                        <div class="account-credentials">student@wphi.edu / student123</div>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-primary use-account-btn" onclick="event.stopPropagation(); useAccount('student', 'student@wphi.edu', 'student123')">
+                                        <i class="bi bi-box-arrow-in-right"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Faculty Adviser Account -->
+                                <div class="account-item" onclick="useAccount('adviser', 'adviser@wphi.edu', 'adviser123')">
+                                    <div class="account-icon adviser">
+                                        <i class="bi bi-journal-bookmark-fill"></i>
+                                    </div>
+                                    <div class="account-details">
+                                        <div class="account-role">Faculty Adviser Account</div>
+                                        <div class="account-credentials">adviser@wphi.edu / adviser123</div>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-primary use-account-btn" onclick="event.stopPropagation(); useAccount('adviser', 'adviser@wphi.edu', 'adviser123')">
+                                        <i class="bi bi-box-arrow-in-right"></i>
+                                    </button>
+                                </div>
+                                
+                                <!-- Supervisor Account -->
+                                <div class="account-item" onclick="useAccount('supervisor', 'hr@techsolutions.com', 'hr123')">
+                                    <div class="account-icon supervisor">
+                                        <i class="bi bi-briefcase-fill"></i>
+                                    </div>
+                                    <div class="account-details">
+                                        <div class="account-role">HR / Supervisor Account</div>
+                                        <div class="account-credentials">hr@techsolutions.com / hr123</div>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-primary use-account-btn" onclick="event.stopPropagation(); useAccount('supervisor', 'hr@techsolutions.com', 'hr123')">
+                                        <i class="bi bi-box-arrow-in-right"></i>
+                                    </button>
+                                </div>
+                                
+                                <!-- Coordinator Account -->
+                                <div class="account-item" onclick="useAccount('coordinator', 'coordinator@wphi.edu', 'admin123')">
+                                    <div class="account-icon coordinator">
+                                        <i class="bi bi-person-badge-fill"></i>
+                                    </div>
+                                    <div class="account-details">
+                                        <div class="account-role">Coordinator / Admin Account</div>
+                                        <div class="account-credentials">coordinator@wphi.edu / admin123</div>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-primary use-account-btn" onclick="event.stopPropagation(); useAccount('coordinator', 'coordinator@wphi.edu', 'admin123')">
+                                        <i class="bi bi-box-arrow-in-right"></i>
+                                    </button>
+                                </div>
+                                
+                                <div class="text-muted small mt-2">
+                                    <i class="bi bi-exclamation-triangle me-1"></i>
+                                    Click any account to auto-fill and login
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Footer -->
+                        <div class="text-center text-md-start text-muted small mt-3">
+                            <i class="bi bi-shield-check"></i> OJT Monitoring System v1.0 <br>© 2026 West Prime Horizon Institute Inc.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT CARD: Login Form (Email & Password) -->
+            <div class="col-xl-5 col-lg-6 col-md-6">
+                <div class="card shadow-lg border-0 rounded-4 h-100">
+                    <div class="card-body p-4 p-xl-5 d-flex flex-column justify-content-center">
+                        <div class="mb-4">
+                            <h4 class="fw-bold text-dark mb-1">Account Login</h4>
+                            <p class="text-muted small mb-0">Select your role and enter credentials to continue</p>
+                        </div>
+
+                        <!-- User Type Selector -->
+                        <div class="btn-group w-100 mb-4" role="group">
+                            <input type="radio" class="btn-check" name="userType" id="student" autocomplete="off" checked>
+                            <label class="btn btn-outline-theme btn-sm py-2 px-1" for="student">
+                                <i class="bi bi-person-fill d-block d-sm-inline me-sm-1"></i>Student
+                            </label>
+
+                            <input type="radio" class="btn-check" name="userType" id="adviser" autocomplete="off">
+                            <label class="btn btn-outline-theme btn-sm py-2 px-1" for="adviser">
+                                <i class="bi bi-journal-bookmark-fill d-block d-sm-inline me-sm-1"></i>Adviser
+                            </label>
+
+                            <input type="radio" class="btn-check" name="userType" id="supervisor" autocomplete="off">
+                            <label class="btn btn-outline-theme btn-sm py-2 px-1" for="supervisor">
+                                <i class="bi bi-briefcase-fill d-block d-sm-inline me-sm-1"></i>Supervisor
+                            </label>
+
+                            <input type="radio" class="btn-check" name="userType" id="coordinator" autocomplete="off">
+                            <label class="btn btn-outline-theme btn-sm py-2 px-1" for="coordinator">
+                                <i class="bi bi-person-badge-fill d-block d-sm-inline me-sm-1"></i>Coordinator
+                            </label>
+                        </div>
+
+                        <!-- Login Form -->
+                        <form id="loginForm" onsubmit="handleLogin(event)">
+                            <!-- Email Field -->
+                            <div class="mb-3">
+                                <label for="email" class="form-label fw-semibold">
+                                    <i class="bi bi-envelope-fill me-1 text-theme-primary"></i>Email
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light text-secondary">
+                                        <i class="bi bi-person-circle"></i>
+                                    </span>
+                                    <input type="text" class="form-control" id="email" 
+                                           placeholder="Enter student ID or email" required>
+                                </div>
+                            </div>
+
+                            <!-- Password Field -->
+                            <div class="mb-3">
+                                <label for="password" class="form-label fw-semibold">
+                                    <i class="bi bi-lock-fill me-1 text-theme-primary"></i>Password
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light text-secondary">
+                                        <i class="bi bi-key-fill"></i>
+                                    </span>
+                                    <input type="password" class="form-control" id="password" 
+                                           placeholder="Enter your password" required>
+                                </div>
+                            </div>
+
+                            <!-- Forgot Password -->
+                            <div class="text-end mb-4">
+                                <a href="#" class="text-decoration-none text-theme-primary small fw-semibold">
+                                    <i class="bi bi-question-circle"></i> Forgot Password?
+                                </a>
+                            </div>
+
+                            <!-- Login Button -->
+                            <button type="submit" class="btn btn-theme-primary w-100 py-2.5 fw-semibold shadow-sm">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>Login
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        // Handle login form submission
+        function handleLogin(event) {
+            event.preventDefault();
+            
+            // Get selected user type
+            let userType = 'student';
+            if (document.getElementById('adviser').checked) {
+                userType = 'adviser';
+            } else if (document.getElementById('supervisor').checked) {
+                userType = 'supervisor';
+            } else if (document.getElementById('coordinator').checked) {
+                userType = 'coordinator';
+            }
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            // Simple validation
+            if (!email || !password) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Incomplete Fields',
+                    text: 'Please fill in all fields',
+                    confirmButtonColor: '#1e3a8a',
+                    confirmButtonText: 'OK'
+                });
+                return;
+            }
+            
+            // Dummy account validation
+            const validAccounts = {
+                student: { email: 'student@wphi.edu', password: 'student123' },
+                adviser: { email: 'adviser@wphi.edu', password: 'adviser123' },
+                supervisor: { email: 'hr@techsolutions.com', password: 'hr123' },
+                coordinator: { email: 'coordinator@wphi.edu', password: 'admin123' }
+            };
+            
+            const account = validAccounts[userType];
+            if (email === account.email && password === account.password) {
+                console.log('Login attempt:', {
+                    userType: userType,
+                    email: email
+                });
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Login Successful!',
+                    text: `Redirecting to ${userType} dashboard.`,
+                    timer: 2000,
+                    timerProgressBar: true,
+                    showConfirmButton: false,
+                    willClose: () => {
+                        // Redirect based on user type
+                        if (userType === 'coordinator') {
+                            window.location.href = 'admin/dashboard.html';
+                        } else if (userType === 'adviser') {
+                            window.location.href = 'faculty/adviser_dashboard.html';
+                        } else if (userType === 'supervisor') {
+                            window.location.href = 'establishment/attendance_approval.html';
+                        } else {
+                            window.location.href = 'students/student_dashboard.html';
+                        }
+                    }
+                });
+                
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Invalid Credentials',
+                    text: 'Please use the demo accounts provided.',
+                    confirmButtonColor: '#1e3a8a',
+                    confirmButtonText: 'Try Again'
+                });
+            }
+        }
+
+        // Use dummy account
+        function useAccount(userType, email, password) {
+            // Select the corresponding radio button
+            document.getElementById(userType).checked = true;
+            
+            // Fill in the credentials
+            document.getElementById('email').value = email;
+            document.getElementById('password').value = password;
+            
+            // Trigger change event for placeholder update
+            const event = new Event('change');
+            document.querySelector(`input[name="userType"][id="${userType}"]`).dispatchEvent(event);
+        }
+
+        // Update placeholder based on user type selection
+        document.querySelectorAll('input[name="userType"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                const emailInput = document.getElementById('email');
+                if (this.id === 'student') {
+                    emailInput.placeholder = 'Enter student ID or email';
+                } else if (this.id === 'adviser') {
+                    emailInput.placeholder = 'Enter faculty email';
+                } else if (this.id === 'supervisor') {
+                    emailInput.placeholder = 'Enter company email';
+                } else if (this.id === 'coordinator') {
+                    emailInput.placeholder = 'Enter coordinator email';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - OJT Monitoring System</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <!-- Chart.js for graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --primary-hover: #4338ca;
+            --accent-color: #06b6d4;
+            --sidebar-gradient: linear-gradient(180deg, #1e1b4b 0%, #312e81 100%);
+            --card-border-radius: 16px;
+            --transition-speed: 0.25s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%) fixed;
+            background-size: cover;
+            overflow-x: hidden;
+            font-family: 'Plus Jakarta Sans', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            color: #1e293b;
+        }
+
+        /* Sidebar Styles */
+        .wrapper {
+            display: flex;
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        #sidebar {
+            min-width: 280px;
+            max-width: 280px;
+            background: var(--sidebar-gradient);
+            color: #fff;
+            transition: all var(--transition-speed);
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            z-index: 1000;
+            box-shadow: 4px 0 25px rgba(0, 0, 0, 0.25);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #sidebar.active {
+            left: -280px;
+        }
+
+        #sidebar .sidebar-header {
+            padding: 28px 24px;
+            background: rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        #sidebar .sidebar-header h3 {
+            margin-bottom: 6px;
+            font-weight: 700;
+            font-size: 1.35rem;
+            letter-spacing: -0.3px;
+        }
+
+        #sidebar .sidebar-header p {
+            margin-bottom: 0;
+            font-size: 0.825rem;
+            opacity: 0.75;
+        }
+
+        #sidebar ul.components {
+            padding: 20px 12px;
+            list-style: none;
+            margin-bottom: auto;
+        }
+
+        #sidebar ul li {
+            margin-bottom: 6px;
+        }
+
+        #sidebar ul li a {
+            padding: 12px 16px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            color: rgba(255, 255, 255, 0.75);
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all var(--transition-speed);
+        }
+
+        #sidebar ul li a i {
+            margin-right: 14px;
+            font-size: 1.25rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        #sidebar ul li a:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            transform: translateX(4px);
+        }
+
+        #sidebar ul li.active a {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+            color: #ffffff;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4);
+        }
+
+        #sidebar .user-info {
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.25);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        #sidebar .user-info .user-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            color: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        /* Main Content Styles */
+        #content {
+            width: 100%;
+            margin-left: 280px;
+            padding: 20px;
+            min-height: 100vh;
+            transition: all 0.3s ease-in-out;
+        }
+
+        #content.active {
+            margin-left: 0;
+        }
+
+        /* Sidebar Toggle Button */
+        #sidebarCollapse {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: #fff;
+            padding: 10px 15px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+            z-index: 1001;
+        }
+
+        #sidebarCollapse:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+        }
+
+        /* Dashboard Cards */
+        .dashboard-header {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s;
+            border: 1px solid rgba(0,0,0,0.05);
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+        }
+
+        .stat-card .stat-icon {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            font-size: 3rem;
+            opacity: 0.2;
+        }
+
+        .stat-card .stat-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #495057;
+            line-height: 1.2;
+            margin-bottom: 5px;
+        }
+
+        /* Upload Section */
+        .upload-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 2px dashed #dee2e6;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .upload-card:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .file-list-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-left: 4px solid #667eea;
+        }
+
+        .file-status {
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-approved {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-rejected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        /* Attendance Section */
+        .attendance-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #e9ecef;
+            transition: all 0.3s;
+        }
+
+        .attendance-card:hover {
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.15);
+        }
+
+        .time-in-btn {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            border: none;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .time-out-btn {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            border: none;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .time-in-btn:hover, .time-out-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .attendance-history {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Credentials Section */
+        .credential-item {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border: 1px solid #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s;
+        }
+
+        .credential-item:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.1);
+        }
+
+        .credential-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            color: #667eea;
+        }
+
+        /* Modal Styles */
+        .modal-content {
+            border-radius: 15px;
+            border: none;
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px 15px 0 0;
+        }
+
+        .modal-header .btn-close {
+            filter: brightness(0) invert(1);
+        }
+
+        /* Progress Bars */
+        .progress {
+            height: 10px;
+            border-radius: 5px;
+            background-color: #e9ecef;
+        }
+
+        .progress-bar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 5px;
+        }
+
+        /* Badges */
+        .badge-required {
+            background: #667eea;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .badge-optional {
+            background: #6c757d;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        /* Overlay for mobile */
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .overlay.active {
+            opacity: 1;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            #sidebar {
+                left: -280px;
+            }
+            
+            #sidebar.active {
+                left: 0;
+            }
+            
+            #content {
+                margin-left: 0 !important;
+            }
+            
+            .stat-card .stat-value {
+                font-size: 1.8rem;
+            }
+            
+            .attendance-history {
+                max-height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <!-- Overlay for mobile -->
+        <div class="overlay" onclick="toggleSidebar()"></div>
+        
+        <!-- Left Sidebar Navigation -->
+        <nav id="sidebar">
+            <div class="sidebar-header">
+                <h3><i class="bi bi-building me-2"></i>WPH Institute</h3>
+                <p><i class="bi bi-geo-alt-fill me-1"></i>Barangay San Francisco</p>
+            </div>
+
+            <ul class="components">
+                <li class="active">
+                    <a href="#dashboard" onclick="showSection('dashboard')">
+                        <i class="bi bi-speedometer2"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#attendance" onclick="showSection('attendance')">
+                        <i class="bi bi-calendar-check"></i>
+                        <span>Attendance</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#documents" onclick="showSection('documents')">
+                        <i class="bi bi-file-earmark-text"></i>
+                        <span>My Documents</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#credentials" onclick="showSection('credentials')">
+                        <i class="bi bi-person-badge"></i>
+                        <span>Credentials</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#profile" onclick="showSection('profile')">
+                        <i class="bi bi-person-circle"></i>
+                        <span>Profile</span>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="user-info">
+                <div class="d-flex align-items-center">
+                    <div class="user-avatar me-3">
+                        <i class="bi bi-person-circle"></i>
+                    </div>
+                    <div>
+                        <div class="fw-semibold">Juan Dela Cruz</div>
+                        <small class="text-white"><i class="bi bi-envelope me-1"></i>juan.dc@wphi.edu</small>
+                    </div>
+                    <a href="../index.html" class="ms-auto text-white" title="Logout">
+                        <i class="bi bi-box-arrow-right fs-5"></i>
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Page Content -->
+        <div id="content">
+            <!-- Top Navigation -->
+            <div class="d-flex align-items-center mb-4">
+                <button type="button" id="sidebarCollapse" class="btn" onclick="toggleSidebar()">
+                    <i class="bi bi-list"></i>
+                </button>
+            </div>
+
+            <!-- DASHBOARD SECTION -->
+            <div id="dashboard-section">
+                <!-- Welcome Header -->
+                <div class="dashboard-header">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h3 class="mb-2">Welcome back, Juan Dela Cruz! 👋</h3>
+                            <p class="text-muted mb-0">Here's your OJT progress and pending tasks</p>
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <div class="current-date" id="currentDate"></div>
+                            <div class="current-time text-primary fw-bold" id="currentTime"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistics Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-4 mb-3">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="bi bi-clock-history"></i>
+                            </div>
+                            <div class="stat-label">Total Hours</div>
+                            <div class="stat-value" id="totalHours">320/350</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="bi bi-calendar-check"></i>
+                            </div>
+                            <div class="stat-label">Attendance</div>
+                            <div class="stat-value" id="attendanceRate">91.42%</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="bi bi-star-fill"></i>
+                            </div>
+                            <div class="stat-label">Performance</div>
+                            <div class="stat-value" id="performance">N/A</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progress and Quick Actions -->
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header bg-white">
+                                <h5 class="mb-0"><i class="bi bi-graph-up me-2 text-primary"></i>OJT Progress</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-4">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="fw-semibold">Overall Progress</span>
+                                        <span class="fw-bold text-primary">91.42%</span>
+                                    </div>
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar" style="width: 91.42%">320/350 hours</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6 class="fw-semibold mb-3">Recent Activities</h6>
+                                        <div class="activity-list">
+                                            <div class="d-flex align-items-center mb-3">
+                                                <div class="bg-success bg-opacity-10 p-2 rounded me-3">
+                                                    <i class="bi bi-check-circle text-success"></i>
+                                                </div>
+                                                <div>
+                                                    <div class="fw-semibold">Attendance Approved</div>
+                                                    <small class="text-muted">March 15, 2024 - 8:00 AM</small>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex align-items-center mb-3">
+                                                <div class="bg-warning bg-opacity-10 p-2 rounded me-3">
+                                                    <i class="bi bi-clock-history text-warning"></i>
+                                                </div>
+                                                <div>
+                                                    <div class="fw-semibold">Document Uploaded</div>
+                                                    <small class="text-muted">MOA - Pending Review</small>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex align-items-center mb-3">
+                                                <div class="bg-info bg-opacity-10 p-2 rounded me-3">
+                                                    <i class="bi bi-star text-info"></i>
+                                                </div>
+                                                <div>
+                                                    <div class="fw-semibold">New Evaluation</div>
+                                                    <small class="text-muted">Supervisor feedback available</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6 class="fw-semibold mb-3">Quick Actions</h6>
+                                        <div class="d-grid gap-2">
+                                            <button class="btn btn-outline-primary text-start" onclick="showSection('attendance')">
+                                                <i class="bi bi-calendar-plus me-2"></i>Log Attendance
+                                            </button>
+                                            <button class="btn btn-outline-primary text-start" onclick="showSection('documents')">
+                                                <i class="bi bi-cloud-upload me-2"></i>Upload Document
+                                            </button>
+                                            <button class="btn btn-outline-primary text-start" onclick="showSection('credentials')">
+                                                <i class="bi bi-person-badge me-2"></i>Update Credentials
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header bg-white">
+                                <h5 class="mb-0"><i class="bi bi-info-circle me-2 text-primary"></i>Assignment Info</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <small class="text-muted">Company</small>
+                                    <p class="fw-semibold mb-2">Tech Solutions Inc.</p>
+                                </div>
+                                <div class="mb-3">
+                                    <small class="text-muted">Supervisor</small>
+                                    <p class="fw-semibold mb-2">John Smith - HR Manager</p>
+                                </div>
+                                <div class="mb-3">
+                                    <small class="text-muted">Contact</small>
+                                    <p class="fw-semibold mb-2">john.smith@techsolutions.com</p>
+                                </div>
+                                <div class="alert alert-info mb-0">
+                                    <i class="bi bi-exclamation-triangle me-2"></i>
+                                    Please submit your documents
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ATTENDANCE SECTION -->
+            <div id="attendance-section" style="display: none;">
+                <div class="dashboard-header mb-4">
+                    <h3 class="mb-2"><i class="bi bi-calendar-check me-2"></i>Attendance Logging</h3>
+                    <p class="text-muted mb-0">Submit your attendance for approval by your supervisor</p>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-5">
+                        <div class="card">
+                            <div class="card-header bg-white">
+                                <h5 class="mb-0"><i class="bi bi-pencil-square me-2 text-primary"></i>Submit Attendance</h5>
+                            </div>
+                            <div class="card-body">
+                                <form id="attendanceForm" onsubmit="submitAttendance(event)">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">Select Date</label>
+                                        <input type="date" class="form-control" id="attendanceDate" max="" required>
+                                        <small class="text-muted">You can submit attendance for current and past dates</small>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label fw-semibold">Time In</label>
+                                            <input type="time" class="form-control" id="timeIn" onchange="calculateTotalHours()" required>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label fw-semibold">Time Out</label>
+                                            <input type="time" class="form-control" id="timeOut" onchange="calculateTotalHours()" required>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">Total Hours <small class="text-muted">(1 hour lunch break deducted)</small></label>
+                                        <input type="text" class="form-control" id="totalHours" readonly placeholder="Auto-calculated">
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">Remarks (Optional)</label>
+                                        <textarea class="form-control" id="attendanceRemarks" rows="2" placeholder="Add any notes about your attendance..."></textarea>
+                                    </div>
+
+                                    <div class="alert alert-info">
+                                        <i class="bi bi-info-circle me-2"></i>
+                                        Submitted attendance will be pending approval from your supervisor.
+                                    </div>
+
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="bi bi-send me-2"></i>Submit Attendance
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-7">
+                        <div class="card">
+                            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0"><i class="bi bi-table me-2 text-primary"></i>Attendance History</h5>
+                                <div class="d-flex gap-2">
+                                    <select class="form-select form-select-sm w-auto" onchange="filterAttendanceTable(this.value)">
+                                        <option value="all">All Status</option>
+                                        <option value="approved">Approved</option>
+                                        <option value="pending">Pending</option>
+                                        <option value="declined">Declined</option>
+                                    </select>
+                                    <select class="form-select form-select-sm w-auto" onchange="filterAttendanceMonth(this.value)">
+                                        <option value="all">All Months</option>
+                                        <option value="1">January</option>
+                                        <option value="2">February</option>
+                                        <option value="3">March</option>
+                                        <option value="4">April</option>
+                                        <option value="5">May</option>
+                                        <option value="6">June</option>
+                                        <option value="7">July</option>
+                                        <option value="8">August</option>
+                                        <option value="9">September</option>
+                                        <option value="10">october</option>
+                                        <option value="11">Novermber</option>
+                                        <option value="12">December</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Day</th>
+                                                <th>Time In</th>
+                                                <th>Time Out</th>
+                                                <th>Total Hours</th>
+                                                <th>Status</th>
+                                                <th>Remarks</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="attendanceTableBody">
+                                            <!-- Sample attendance records -->
+                                            <tr>
+                                                <td>2024-03-15</td>
+                                                <td>Friday</td>
+                                                <td>08:00 AM</td>
+                                                <td>05:00 PM</td>
+                                                <td>8.0</td>
+                                                <td><span class="badge bg-success">Approved</span></td>
+                                                <td><small class="text-muted">-</small></td>
+                                            </tr>
+                                            <tr>
+                                                <td>2024-03-14</td>
+                                                <td>Thursday</td>
+                                                <td>08:15 AM</td>
+                                                <td>05:15 PM</td>
+                                                <td>8.0</td>
+                                                <td><span class="badge bg-success">Approved</span></td>
+                                                <td><small class="text-muted">-</small></td>
+                                            </tr>
+                                            <tr>
+                                                <td>2024-03-13</td>
+                                                <td>Wednesday</td>
+                                                <td>08:30 AM</td>
+                                                <td>05:30 PM</td>
+                                                <td>8.0</td>
+                                                <td><span class="badge bg-warning">Pending</span></td>
+                                                <td><small class="text-muted">Waiting for approval</small></td>
+                                            </tr>
+                                            <tr>
+                                                <td>2024-03-12</td>
+                                                <td>Tuesday</td>
+                                                <td>08:00 AM</td>
+                                                <td>04:30 PM</td>
+                                                <td>8.5</td>
+                                                <td><span class="badge bg-success">Approved</span></td>
+                                                <td><small class="text-muted">-</small></td>
+                                            </tr>
+                                            <tr>
+                                                <td>2024-03-11</td>
+                                                <td>Monday</td>
+                                                <td>09:00 AM</td>
+                                                <td>06:00 PM</td>
+                                                <td>8.0</td>
+                                                <td><span class="badge bg-danger">Declined</span></td>
+                                                <td><small class="text-danger">Late arrival, please resubmit with explanation</small></td>
+                                            </tr>
+                                            <tr>
+                                                <td>2024-03-10</td>
+                                                <td>Sunday</td>
+                                                <td>-</td>
+                                                <td>-</td>
+                                                <td>0</td>
+                                                <td><span class="badge bg-secondary">No Log</span></td>
+                                                <td><small class="text-muted">Weekend</small></td>
+                                            </tr>
+                                            <tr>
+                                                <td>2024-03-09</td>
+                                                <td>Saturday</td>
+                                                <td>-</td>
+                                                <td>-</td>
+                                                <td>0</td>
+                                                <td><span class="badge bg-secondary">No Log</span></td>
+                                                <td><small class="text-muted">Weekend</small></td>
+                                            </tr>
+                                            <tr>
+                                                <td>2024-03-08</td>
+                                                <td>Friday</td>
+                                                <td>08:00 AM</td>
+                                                <td>05:00 PM</td>
+                                                <td>8.0</td>
+                                                <td><span class="badge bg-success">Approved</span></td>
+                                                <td><small class="text-muted">-</small></td>
+                                            </tr>
+                                            <tr>
+                                                <td>2024-03-07</td>
+                                                <td>Thursday</td>
+                                                <td>08:00 AM</td>
+                                                <td>05:00 PM</td>
+                                                <td>8.0</td>
+                                                <td><span class="badge bg-success">Approved</span></td>
+                                                <td><small class="text-muted">-</small></td>
+                                            </tr>
+                                            <tr>
+                                                <td>2024-03-06</td>
+                                                <td>Wednesday</td>
+                                                <td>08:30 AM</td>
+                                                <td>05:30 PM</td>
+                                                <td>8.0</td>
+                                                <td><span class="badge bg-warning">Pending</span></td>
+                                                <td><small class="text-muted">Submitted late</small></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                <!-- Pagination -->
+                                <nav aria-label="Attendance table pagination" class="mt-3">
+                                    <ul class="pagination justify-content-center pagination-sm">
+                                        <li class="page-item disabled">
+                                            <a class="page-link" href="#"><i class="bi bi-chevron-left"></i></a>
+                                        </li>
+                                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                        <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                        <li class="page-item"><a class="page-link" href="#">4</a></li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="#"><i class="bi bi-chevron-right"></i></a>
+                                        </li>
+                                    </ul>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DOCUMENTS SECTION -->
+            <div id="documents-section" style="display: none;">
+                <div class="dashboard-header mb-4">
+                    <h3 class="mb-2"><i class="bi bi-file-earmark-text me-2"></i>My Documents</h3>
+                    <p class="text-muted mb-0">Upload and manage your OJT requirements</p>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="upload-card text-center" onclick="document.getElementById('fileUpload').click()">
+                            <div class="upload-icon">
+                                <i class="bi bi-cloud-upload"></i>
+                            </div>
+                            <h5>Upload New Document</h5>
+                            <p class="text-muted small mb-0">Click to browse or drag and drop</p>
+                            <p class="text-muted small">PDF, JPG, PNG (Max 10MB)</p>
+                            <input type="file" id="fileUpload" class="d-none" multiple accept=".pdf,.jpg,.jpeg,.png" onchange="handleFileSelect(event)">
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header bg-white">
+                                <h5 class="mb-0"><i class="bi bi-files me-2 text-primary"></i>Uploaded Documents</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="fileList">
+                                    <!-- Sample uploaded files -->
+                                    <div class="file-list-item">
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-file-earmark-pdf text-danger fs-4 me-3"></i>
+                                            <div>
+                                                <div class="fw-semibold">MOA - Tech Solutions Inc.pdf</div>
+                                                <small class="text-muted">Uploaded: March 10, 2024</small>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <button class="btn btn-sm btn-outline-danger" onclick="removeDocument(this)">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="file-list-item">
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-file-earmark-text text-primary fs-4 me-3"></i>
+                                            <div>
+                                                <div class="fw-semibold">Parent's Waiver - Juan Dela Cruz.pdf</div>
+                                                <small class="text-muted">Uploaded: March 12, 2024</small>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <button class="btn btn-sm btn-outline-danger" onclick="removeDocument(this)">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="file-list-item">
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-file-earmark-image text-success fs-4 me-3"></i>
+                                            <div>
+                                                <div class="fw-semibold">Medical Certificate.jpg</div>
+                                                <small class="text-muted">Uploaded: March 14, 2024</small>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <button class="btn btn-sm btn-outline-danger" onclick="removeDocument(this)">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CREDENTIALS SECTION -->
+            <div id="credentials-section" style="display: none;">
+                <div class="dashboard-header mb-4">
+                    <h3 class="mb-2"><i class="bi bi-person-badge me-2"></i>My Credentials</h3>
+                    <p class="text-muted mb-0">Update your personal information and credentials</p>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <div class="user-avatar mx-auto" style="width: 100px; height: 100px; font-size: 3rem;">
+                                        <i class="bi bi-person-circle"></i>
+                                    </div>
+                                </div>
+                                <h4>Juan Dela Cruz</h4>
+                                <p class="text-muted">Student ID: 2024-001</p>
+                                <button class="btn btn-outline-primary w-100" onclick="changeProfilePicture()">
+                                    <i class="bi bi-camera me-2"></i>Change Photo
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="card mt-3">
+                            <div class="card-header bg-white">
+                                <h6 class="mb-0"><i class="bi bi-shield-check me-2 text-primary"></i>Account Status</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Email Verified</span>
+                                    <span class="text-success"><i class="bi bi-check-circle-fill"></i></span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span>Account Status</span>
+                                    <span class="badge bg-success">Active</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0"><i class="bi bi-pencil-square me-2 text-primary"></i>Edit Credentials</h5>
+                            </div>
+                            <div class="card-body">
+                                <form id="credentialsForm">
+                                    <div class="row">
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label fw-semibold">First Name</label>
+                                            <input type="text" class="form-control" value="Juan" required>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label fw-semibold">Middle Initial</label>
+                                            <input type="text" class="form-control" value="D." maxlength="3">
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label fw-semibold">Last Name</label>
+                                            <input type="text" class="form-control" value="Dela Cruz" required>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label fw-semibold">Age</label>
+                                            <input type="number" class="form-control" value="21" min="16" max="60">
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label fw-semibold">Date of Birth</label>
+                                            <input type="date" class="form-control" value="2003-05-15">
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label fw-semibold">Gender</label>
+                                            <select class="form-select">
+                                                <option>Male</option>
+                                                <option>Female</option>
+                                                <option>Prefer not to say</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">Contact Number</label>
+                                        <input type="tel" class="form-control" value="09171234567" maxlength="11">
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">Complete Address</label>
+                                        <textarea class="form-control" rows="2">123 Main St., Barangay San Jose, Manila</textarea>
+                                    </div>
+
+                                    <hr>
+
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label fw-semibold">Change Password</label>
+                                            <input type="password" class="form-control" placeholder="New password">
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label fw-semibold">Confirm Password</label>
+                                            <input type="password" class="form-control" placeholder="Confirm new password">
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex justify-content-end gap-2">
+                                        <button type="reset" class="btn btn-secondary">
+                                            <i class="bi bi-arrow-counterclockwise me-2"></i>Cancel
+                                        </button>
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="bi bi-save me-2"></i>Save Changes
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PROFILE SECTION -->
+            <div id="profile-section" style="display: none;">
+                <div class="dashboard-header mb-4">
+                    <h3 class="mb-2"><i class="bi bi-person-circle me-2"></i>My Profile</h3>
+                    <p class="text-muted mb-0">View your complete profile information</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h5 class="mb-3">Personal Information</h5>
+                                <table class="table table-borderless">
+                                    <tr>
+                                        <th width="200">Full Name:</th>
+                                        <td>Juan D. Dela Cruz</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Student ID:</th>
+                                        <td>2024-001</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Age:</th>
+                                        <td>21 years old</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Date of Birth:</th>
+                                        <td>May 15, 2003</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Gender:</th>
+                                        <td>Male</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Email:</th>
+                                        <td>juan.dc@wphi.edu</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Contact Number:</th>
+                                        <td>0917 123 4567</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Address:</th>
+                                        <td>123 Main St., Barangay San Jose, Manila</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Course:</th>
+                                        <td>BS Information Technology</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Year Level:</th>
+                                        <td>3rd Year</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-light">
+                                    <div class="card-body text-center">
+                                        <div class="user-avatar mx-auto mb-3" style="width: 120px; height: 120px; font-size: 4rem;">
+                                            <i class="bi bi-person-circle"></i>
+                                        </div>
+                                        <h5>Juan Dela Cruz</h5>
+                                        <p class="text-muted">Student</p>
+                                        <hr>
+                                        <div class="text-start">
+                                            <p><i class="bi bi-building me-2"></i>Tech Solutions Inc.</p>
+                                            <p><i class="bi bi-person-badge me-2"></i>John Smith (Supervisor)</p>
+                                            <p><i class="bi bi-calendar me-2"></i>Started: Jan 15, 2024</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+
+        // Set max date for attendance submission (today)
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date().toISOString().split('T')[0];
+            const sectionToShow = sessionStorage.getItem('studentDashboardSection');
+            document.getElementById('attendanceDate').setAttribute('max', today);
+            
+            // Set default date to today
+            document.getElementById('attendanceDate').value = today;
+
+            if (sectionToShow) {
+                // Show the requested section
+                showSection(sectionToShow);
+                // Clear the session storage
+                sessionStorage.removeItem('studentDashboardSection');
+            } else {
+                // Check URL hash
+                const hash = window.location.hash.substring(1);
+                if (hash && ['dashboard', 'attendance', 'documents', 'credentials', 'profile'].includes(hash)) {
+                    showSection(hash);
+                } else {
+                    // Default to dashboard
+                    showSection('dashboard');
+                }
+            }
+            
+            // Initialize summary counts
+            updateSummaryCounts();
+        });
+
+        function calculateTotalHours() {
+            const timeIn = document.getElementById('timeIn').value;
+            const timeOut = document.getElementById('timeOut').value;
+            const totalHoursField = document.getElementById('totalHours');
+            
+            if (timeIn && timeOut) {
+                // Parse time strings
+                const [inHours, inMinutes] = timeIn.split(':').map(Number);
+                const [outHours, outMinutes] = timeOut.split(':').map(Number);
+                
+                // Calculate total minutes
+                let totalMinutes = (outHours * 60 + outMinutes) - (inHours * 60 + inMinutes);
+                
+                // Handle negative time (if time out is next day)
+                if (totalMinutes < 0) {
+                    totalMinutes += 24 * 60;
+                }
+                
+                // Deduct 1 hour (60 minutes) for lunch break if total time is more than 5 hours
+                if (totalMinutes > 300) { // More than 5 hours
+                    totalMinutes -= 60; // Deduct 1 hour lunch break
+                }
+                
+                // Convert to hours with 1 decimal place
+                const totalHours = (totalMinutes / 60).toFixed(1);
+                totalHoursField.value = totalHours + ' hours';
+            } else {
+                totalHoursField.value = '';
+            }
+        }
+
+        // Calculate total hours when time in/out changes
+        document.getElementById('timeIn').addEventListener('input', calculateTotalHours);
+        document.getElementById('timeOut').addEventListener('input', calculateTotalHours);
+        document.getElementById('timeIn').addEventListener('change', calculateTotalHours);
+        document.getElementById('timeOut').addEventListener('change', calculateTotalHours);
+
+        // Submit attendance
+        function submitAttendance(event) {
+            event.preventDefault();
+            
+            const date = document.getElementById('attendanceDate').value;
+            const timeIn = document.getElementById('timeIn').value;
+            const timeOut = document.getElementById('timeOut').value;
+            const remarks = document.getElementById('attendanceRemarks').value;
+            const totalHoursField = document.getElementById('totalHours').value;
+            
+            if (!timeIn || !timeOut) {
+                alert('Please enter both time in and time out');
+                return;
+            }
+            
+            if (!totalHoursField) {
+                alert('Please wait for total hours to calculate');
+                return;
+            }
+            
+            // Extract just the number from "X.X hours"
+            const totalHours = totalHoursField.split(' ')[0];
+            
+            // Format time for display
+            const formattedTimeIn = formatTime(timeIn);
+            const formattedTimeOut = formatTime(timeOut);
+            
+            // Get day of week
+            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            const dayOfWeek = days[new Date(date).getDay()];
+            
+            // Add new row to table
+            const tableBody = document.getElementById('attendanceTableBody');
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td>${date}</td>
+                <td>${dayOfWeek}</td>
+                <td>${formattedTimeIn}</td>
+                <td>${formattedTimeOut}</td>
+                <td>${totalHours}</td>
+                <td><span class="badge bg-warning">Pending</span></td>
+                <td><small class="text-muted">${remarks || '-'}</small></td>
+            `;
+            
+            // Add to top of table
+            tableBody.insertBefore(newRow, tableBody.firstChild);
+            
+            // Show success message
+            alert('Attendance submitted successfully! Waiting for supervisor approval.');
+            
+            // Reset form but keep date as today
+            document.getElementById('timeIn').value = '';
+            document.getElementById('timeOut').value = '';
+            document.getElementById('totalHours').value = '';
+            document.getElementById('attendanceRemarks').value = '';
+            
+            // Update summary counts
+            updateSummaryCounts();
+        }
+
+        // Format time from 24h to 12h format
+        function formatTime(time24) {
+            if (!time24) return '-';
+            const [hours, minutes] = time24.split(':');
+            const hour = parseInt(hours);
+            const ampm = hour >= 12 ? 'PM' : 'AM';
+            const hour12 = hour % 12 || 12;
+            return `${hour12}:${minutes} ${ampm}`;
+        }
+
+        // Filter attendance table by status
+        function filterAttendanceTable(status) {
+            const rows = document.querySelectorAll('#attendanceTableBody tr');
+    
+            rows.forEach(row => {
+                const statusCell = row.querySelector('td:nth-child(6) span');
+                if (statusCell) {
+                    const rowStatus = statusCell.textContent.trim().toLowerCase();
+                    if (status === 'all' || rowStatus === status) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                }
+            });
+        }
+
+        // Filter attendance by month
+        function filterAttendanceMonth(month) {
+            const rows = document.querySelectorAll('#attendanceTableBody tr');
+    
+            rows.forEach(row => {
+                const dateCell = row.querySelector('td:first-child').textContent;
+                if (dateCell && dateCell !== '-') {
+                    const rowMonth = new Date(dateCell).getMonth() + 1; // JavaScript months are 0-based
+                    
+                    if (month === 'all' || rowMonth.toString() === month) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                }
+            });
+        }
+
+        // Update summary counts
+        function updateSummaryCounts() {
+            const rows = document.querySelectorAll('#attendanceTableBody tr');
+            let approved = 0;
+            let pending = 0;
+            let totalHours = 0;
+            
+            rows.forEach(row => {
+                const statusCell = row.querySelector('td:nth-child(6) span');
+                const hoursCell = row.querySelector('td:nth-child-5');
+                
+                if (statusCell && hoursCell) {
+                    const status = statusCell.textContent.trim().toLowerCase();
+                    const hours = parseFloat(hoursCell.textContent) || 0;
+                    
+                    if (status === 'approved') {
+                        approved++;
+                        totalHours += hours;
+                    } else if (status === 'pending') {
+                        pending++;
+                    }
+                }
+            });
+            
+            document.getElementById('presentCount').textContent = approved;
+            document.getElementById('pendingCount').textContent = pending;
+            document.getElementById('totalHoursSummary').textContent = totalHours;
+        }
+        // Show selected section
+        function showSection(section) {
+            // Hide all sections
+            document.getElementById('dashboard-section').style.display = 'none';
+            document.getElementById('attendance-section').style.display = 'none';
+            document.getElementById('documents-section').style.display = 'none';
+            document.getElementById('credentials-section').style.display = 'none';
+            document.getElementById('profile-section').style.display = 'none';
+            
+            // Show selected section
+            document.getElementById(section + '-section').style.display = 'block';
+            
+            // Update active state in sidebar
+            document.querySelectorAll('#sidebar ul li').forEach(li => {
+                li.classList.remove('active');
+            });
+            event.currentTarget.parentElement.classList.add('active');
+        }
+
+        // Toggle sidebar
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('content').classList.toggle('active');
+            document.querySelector('.overlay').classList.toggle('active');
+        }
+
+        // Update date and time
+        function updateDateTime() {
+            const now = new Date();
+            const dateOptions = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            };
+            const timeOptions = { 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit',
+                hour12: true 
+            };
+            
+            document.getElementById('currentDate').innerHTML = now.toLocaleDateString('en-US', dateOptions);
+            document.getElementById('currentTime').innerHTML = now.toLocaleTimeString('en-US', timeOptions);
+        }
+
+        setInterval(updateDateTime, 1000);
+        updateDateTime();
+
+        // Handle file selection
+        function handleFileSelect(event) {
+            const files = event.target.files;
+            const fileList = document.getElementById('fileList');
+            
+            if (files.length > 0) {
+                let html = fileList.innerHTML;
+                
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    const fileSize = (file.size / 1024).toFixed(2);
+                    const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                    
+                    let icon = 'bi-file-earmark';
+                    if (file.type.includes('pdf')) {
+                        icon = 'bi-file-earmark-pdf text-danger';
+                    } else if (file.type.includes('image')) {
+                        icon = 'bi-file-earmark-image text-success';
+                    }
+                    
+                    html += `
+                        <div class="file-list-item">
+                            <div class="d-flex align-items-center">
+                                <i class="bi ${icon} fs-4 me-3"></i>
+                                <div>
+                                    <div class="fw-semibold">${file.name}</div>
+                                    <small class="text-muted">Uploaded: ${today}</small>
+                                </div>
+                            </div>
+                            <div>
+                                <button class="btn btn-sm btn-outline-danger" onclick="removeDocument(this)">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                fileList.innerHTML = html;
+            }
+        }
+
+        // Remove document
+        function removeDocument(button) {
+            if (confirm('Are you sure you want to remove this document?')) {
+                button.closest('.file-list-item').remove();
+            }
+        }
+
+        // Log attendance
+        function logTime(type) {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            
+            if (type === 'in') {
+                alert(`Time In logged at ${timeStr}`);
+            } else {
+                alert(`Time Out logged at ${timeStr}`);
+            }
+        }
+
+        // Filter attendance
+        function filterAttendance(filter) {
+            alert(`Filtering attendance by: ${filter}`);
+        }
+
+        // Change profile picture
+        function changeProfilePicture() {
+            alert('Opening file picker to change profile picture');
+        }
+
+        // Handle credentials form submission
+        document.getElementById('credentialsForm')?.addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Credentials updated successfully!');
+        });
+
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const toggleBtn = document.getElementById('sidebarCollapse');
+            
+            if (window.innerWidth <= 768) {
+                if (!sidebar.contains(event.target) && !toggleBtn.contains(event.target) && sidebar.classList.contains('active')) {
+                    sidebar.classList.remove('active');
+                    document.getElementById('content').classList.remove('active');
+                    document.querySelector('.overlay').classList.remove('active');
+                }
+            }
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                document.getElementById('sidebar').classList.remove('active');
+                document.getElementById('content').classList.remove('active');
+                document.querySelector('.overlay').classList.remove('active');
+            }
+        });
+
+        updateSummaryCounts();
+        calculateTotalHours();
+    </script>
+</body>
+</html>

@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Monitoring - OJT Monitoring System</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <!-- Flatpickr for date/time picker -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --primary-hover: #4338ca;
+            --accent-color: #06b6d4;
+            --sidebar-gradient: linear-gradient(180deg, #1e1b4b 0%, #312e81 100%);
+            --card-border-radius: 16px;
+            --transition-speed: 0.25s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%) fixed;
+            background-size: cover;
+            overflow-x: hidden;
+            font-family: 'Plus Jakarta Sans', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            color: #1e293b;
+        }
+
+        /* Sidebar Styles */
+        .wrapper {
+            display: flex;
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        #sidebar {
+            min-width: 280px;
+            max-width: 280px;
+            background: var(--sidebar-gradient);
+            color: #fff;
+            transition: all var(--transition-speed);
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            z-index: 1000;
+            box-shadow: 4px 0 25px rgba(0, 0, 0, 0.25);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #sidebar.active {
+            left: -280px;
+        }
+
+        #sidebar .sidebar-header {
+            padding: 28px 24px;
+            background: rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        #sidebar .sidebar-header h3 {
+            margin-bottom: 6px;
+            font-weight: 700;
+            font-size: 1.35rem;
+            letter-spacing: -0.3px;
+        }
+
+        #sidebar .sidebar-header p {
+            margin-bottom: 0;
+            font-size: 0.825rem;
+            opacity: 0.75;
+        }
+
+        #sidebar ul.components {
+            padding: 20px 12px;
+            list-style: none;
+            margin-bottom: auto;
+        }
+
+        #sidebar ul li {
+            margin-bottom: 6px;
+        }
+
+        #sidebar ul li a {
+            padding: 12px 16px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            color: rgba(255, 255, 255, 0.75);
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all var(--transition-speed);
+        }
+
+        #sidebar ul li a i {
+            margin-right: 14px;
+            font-size: 1.25rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        #sidebar ul li a:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            transform: translateX(4px);
+        }
+
+        #sidebar ul li.active a {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+            color: #ffffff;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4);
+        }
+
+        #sidebar .user-info {
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.25);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        #sidebar .user-info .user-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            color: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        
+        /* Main Content Styles */
+        #content {
+            width: 100%;
+            margin-left: 280px;
+            padding: 20px;
+            min-height: 100vh;
+            transition: all 0.3s ease-in-out;
+        }
+        
+        #content.active {
+            margin-left: 0;
+        }
+        
+        /* Sidebar Toggle Button */
+        #sidebarCollapse {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: #fff;
+            padding: 10px 15px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+            z-index: 1001;
+        }
+        
+        #sidebarCollapse:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+        }
+        
+        .content-wrapper {
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 20px;
+        }
+        
+        /* Attendance Specific Styles */
+        .current-time-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .current-time {
+            font-size: 3rem;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+        
+        .current-date {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .student-search {
+            background: white;
+            border-radius: 50px;
+            padding: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .student-search input {
+            border: none;
+            padding: 12px 20px;
+            border-radius: 50px;
+            width: 100%;
+        }
+        
+        .student-search input:focus {
+            outline: none;
+            box-shadow: none;
+        }
+        
+        .student-search button {
+            border-radius: 50px;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .student-search button:hover {
+            transform: scale(1.05);
+        }
+        
+        .student-avatar-sm {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .summary-stat {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+        
+        .summary-stat:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .attendance-percentage {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #28a745;
+        }
+        
+        .message-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .message-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        /* Overlay for mobile */
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+        
+        .overlay.active {
+            opacity: 1;
+        }
+        
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            #sidebar {
+                left: -280px;
+            }
+            
+            #sidebar.active {
+                left: 0;
+            }
+            
+            #content {
+                margin-left: 0 !important;
+            }
+            
+            .current-time {
+                font-size: 2rem;
+            }
+            
+            .summary-stat {
+                margin-bottom: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <!-- Overlay for mobile -->
+        <div class="overlay" onclick="toggleSidebar()"></div>
+        
+        <!-- Left Sidebar Navigation -->
+        <nav id="sidebar">
+            <div class="sidebar-header">
+                <h3><i class="bi bi-building me-2"></i>WPH Institute</h3>
+                <p><i class="bi bi-geo-alt-fill me-1"></i>Barangay San Francisco</p>
+            </div>
+
+            <ul class="components">
+                <li>
+                    <a href="dashboard.html">
+                        <i class="bi bi-speedometer2"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="establishments_management.html">
+                        <i class="bi bi-building"></i>
+                        <span>Establishment Management</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="student_management.html">
+                        <i class="bi bi-people-fill"></i>
+                        <span>Student Management</span>
+                    </a>
+                </li>
+                <li class="active">
+                    <a href="attendance_management.html">
+                        <i class="bi bi-calendar-check"></i>
+                        <span>Attendance</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="message_management.html">
+                        <i class="bi bi-chat-dots-fill"></i>
+                        <span>Messages</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="evaluation.html">
+                        <i class="bi bi-star-fill"></i>
+                        <span>Evaluations</span>
+                    </a>
+                </li>
+                <!-- <li>
+                    <a href="#">
+                        <i class="bi bi-graph-up"></i>
+                        <span>Reports</span>
+                    </a>
+                </li> -->
+            </ul>
+
+            <div class="user-info">
+                <div class="d-flex align-items-center">
+                    <div class="user-avatar me-3">
+                        <i class="bi bi-person-circle"></i>
+                    </div>
+                    <div>
+                        <div class="fw-semibold">Admin</div>
+                    </div>
+                    <a href="../index.html" class="ms-auto text-white" title="Logout">
+                        <i class="bi bi-box-arrow-right fs-5"></i>
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Page Content -->
+        <div id="content">
+            <!-- Top Navigation -->
+            <div class="d-flex align-items-center mb-4">
+                <button type="button" id="sidebarCollapse" class="btn" onclick="toggleSidebar()">
+                    <i class="bi bi-list"></i>
+                </button>
+            </div>
+
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4 text-white">
+                <div>
+                    <h2 class="fw-bold"><i class="bi bi-calendar-check me-2"></i>Attendance Monitoring</h2>
+                    <p class="mb-0">Track student attendance and send messages</p>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="content-wrapper">
+
+                <!-- Student Search -->
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <div class="student-search d-flex align-items-center">
+                            <span class="input-group-text bg-light border-0">
+                                <i class="bi bi-search text-primary"></i>
+                            </span>
+                            <input type="text" id="studentSearch" class="form-control border-0 shadow-none" 
+                                   placeholder="Search by student name, establishment, or ID..." 
+                                   autocomplete="off"
+                                   onchange="searchStudent()"
+                                   oninput="searchStudent()">
+                        </div>
+                        <small class="text-muted mt-2 d-block">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Start typing to filter results
+                        </small>
+                    </div>
+                </div>
+
+                <!-- Students Attendance Table -->
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle" id="studentsTable">
+                        <thead class="table-primary">
+                            <tr>
+                                <th>Student</th>
+                                <th>Establishment</th>
+                                <th>Attendance Percentage</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentsTableBody">
+                            <!-- Data will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <nav aria-label="Students table pagination" class="mt-4">
+                    <ul class="pagination justify-content-center" id="tablePagination">
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#"><i class="bi bi-chevron-left"></i></a>
+                        </li>
+                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                        <li class="page-item"><a class="page-link" href="#">3</a></li>
+                        <li class="page-item"><a class="page-link" href="#">4</a></li>
+                        <li class="page-item"><a class="page-link" href="#">5</a></li>
+                        <li class="page-item">
+                            <a class="page-link" href="#"><i class="bi bi-chevron-right"></i></a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+
+    <script>
+        // Sample student data
+        const students = [
+            {
+                id: '2024-001',
+                name: 'Juan Dela Cruz',
+                avatar: '../assets/images/user.png',
+                establishment: 'Tech Solutions Inc.',
+                attendancePercentage: 95,
+                present: 38,
+                totalDays: 40
+            },
+            {
+                id: '2024-002',
+                name: 'Maria Santos',
+                avatar: '../assets/images/user.png',
+                establishment: 'Business Analytics Co.',
+                attendancePercentage: 88,
+                present: 35,
+                totalDays: 40
+            },
+            {
+                id: '2024-003',
+                name: 'John Smith',
+                avatar: '../assets/images/user.png',
+                establishment: 'Digital Innovations Corp.',
+                attendancePercentage: 92,
+                present: 37,
+                totalDays: 40
+            },
+            {
+                id: '2024-004',
+                name: 'Anna Reyes',
+                avatar: '../assets/images/user.png',
+                establishment: 'Hospitality Services Group',
+                attendancePercentage: 78,
+                present: 31,
+                totalDays: 40
+            },
+            {
+                id: '2024-005',
+                name: 'Pedro Gonzales',
+                avatar: '../assets/images/user.png',
+                establishment: 'Accounting Partners Ltd.',
+                attendancePercentage: 98,
+                present: 39,
+                totalDays: 40
+            },
+            {
+                id: '2024-006',
+                name: 'Maria Garcia',
+                avatar: '../assets/images/user.png',
+                establishment: 'Tech Solutions Inc.',
+                attendancePercentage: 85,
+                present: 34,
+                totalDays: 40
+            },
+            {
+                id: '2024-007',
+                name: 'Jose Santos',
+                avatar: '../assets/images/user.png',
+                establishment: 'Business Analytics Co.',
+                attendancePercentage: 90,
+                present: 36,
+                totalDays: 40
+            },
+            {
+                id: '2024-008',
+                name: 'Ana Lim',
+                avatar: '../assets/images/user.png',
+                establishment: 'Digital Innovations Corp.',
+                attendancePercentage: 82,
+                present: 33,
+                totalDays: 40
+            }
+        ];
+
+        // Load students table
+        function loadStudentsTable() {
+            const tbody = document.getElementById('studentsTableBody');
+            let html = '';
+            
+            students.forEach(student => {
+                // Determine color class based on attendance percentage
+                let percentageClass = 'text-success';
+                if (student.attendancePercentage < 80) {
+                    percentageClass = 'text-danger';
+                } else if (student.attendancePercentage < 90) {
+                    percentageClass = 'text-warning';
+                }
+                
+                html += `
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <img src="${student.avatar}" class="student-avatar-sm me-3" alt="avatar">
+                                <div>
+                                    <div class="fw-semibold">${student.name}</div>
+                                    <small class="text-muted">ID: ${student.id}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="fw-semibold">${student.establishment}</div>
+                            <small class="text-muted">${student.present}/${student.totalDays} days present</small>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="progress flex-grow-1 me-3" style="height: 10px;">
+                                    <div class="progress-bar bg-${student.attendancePercentage >= 90 ? 'success' : (student.attendancePercentage >= 80 ? 'warning' : 'danger')}" 
+                                         style="width: ${student.attendancePercentage}%"></div>
+                                </div>
+                                <span class="${percentageClass} fw-bold">${student.attendancePercentage}%</span>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html;
+        }
+
+        // Initialize
+        loadStudentsTable();
+
+        // Toggle sidebar
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('content').classList.toggle('active');
+            document.querySelector('.overlay').classList.toggle('active');
+        }
+
+        // Search student
+        function searchStudent() {
+            const searchTerm = document.getElementById('studentSearch').value.toLowerCase();
+            const rows = document.querySelectorAll('#studentsTableBody tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                document.getElementById('sidebar').classList.remove('active');
+                document.getElementById('content').classList.remove('active');
+                document.querySelector('.overlay').classList.remove('active');
+            }
+        });
+
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const toggleBtn = document.getElementById('sidebarCollapse');
+            
+            if (window.innerWidth <= 768) {
+                if (!sidebar.contains(event.target) && !toggleBtn.contains(event.target) && sidebar.classList.contains('active')) {
+                    sidebar.classList.remove('active');
+                    document.getElementById('content').classList.remove('active');
+                    document.querySelector('.overlay').classList.remove('active');
+                }
+            }
+        });
+
+        // Add enter key support for search
+        document.getElementById('studentSearch').addEventListener('input', function(e) {
+            if (e.key === 'Enter') {
+                searchStudent();
+            }
+        });
+    </script>
+</body>
+</html>

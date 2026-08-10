@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Approval - OJT Monitoring System</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- DataTables -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
+                        url('../assets/images/west-prime.jpg') no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+
+        .wrapper {
+            display: flex;
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        #sidebar {
+            min-width: 280px;
+            max-width: 280px;
+           background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            transition: all 0.3s ease-in-out;
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            z-index: 1000;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            overflow-y: auto;
+        }
+
+        #sidebar.active {
+            left: -280px;
+        }
+
+        #sidebar .sidebar-header {
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        #sidebar .sidebar-header h3 {
+            margin-bottom: 5px;
+            font-weight: 700;
+            font-size: 1.5rem;
+        }
+
+        #sidebar .sidebar-header p {
+            margin-bottom: 0;
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        #sidebar ul.components {
+            padding: 20px 0;
+            list-style: none;
+            margin-bottom: 80px;
+        }
+
+        #sidebar ul li {
+            padding: 0 15px;
+            margin-bottom: 5px;
+        }
+
+        #sidebar ul li a {
+            padding: 12px 15px;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+
+        #sidebar ul li a i {
+            margin-right: 12px;
+            font-size: 1.3rem;
+            width: 25px;
+            text-align: center;
+        }
+
+        #sidebar ul li a:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        #sidebar ul li a:hover i {
+            color: white;
+        }
+
+        #sidebar ul li.active a {
+            background: rgba(255,255,255,0.2);
+            color: #fff;
+            font-weight: 600;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        #sidebar ul li.active a i {
+            color: white;
+        }
+
+        #sidebar .user-info {
+            padding: 20px;
+            background: rgba(0,0,0,0.2);
+            border-top: 1px solid rgba(255,255,255,0.1);
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+        }
+
+        #sidebar .user-info .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        #content {
+            width: 100%;
+            margin-left: 280px;
+            padding: 20px;
+            min-height: 100vh;
+            transition: all 0.3s ease-in-out;
+        }
+
+        #content.active {
+            margin-left: 0;
+        }
+
+        #sidebarCollapse {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: #fff;
+            padding: 10px 15px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+            z-index: 1001;
+        }
+
+        #sidebarCollapse:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+        }
+
+        .content-wrapper {
+            background-color: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .dashboard-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s;
+            border: 1px solid rgba(0,0,0,0.05);
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card .stat-icon {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            font-size: 3rem;
+            opacity: 0.2;
+        }
+
+        .stat-card .stat-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #495057;
+            line-height: 1.2;
+            margin-bottom: 5px;
+        }
+
+        .student-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .badge-pending {
+            background: #fff3cd;
+            color: #856404;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .badge-approved {
+            background: #d4edda;
+            color: #155724;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .badge-declined {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .action-buttons .btn {
+            margin: 0 2px;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .overlay.active {
+            opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            #sidebar {
+                left: -280px;
+            }
+            
+            #sidebar.active {
+                left: 0;
+            }
+            
+            #content {
+                margin-left: 0 !important;
+            }
+            
+            .stat-card .stat-value {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <div class="overlay" onclick="toggleSidebar()"></div>
+        
+        <nav id="sidebar">
+            <div class="sidebar-header">
+                <h3><i class="bi bi-building me-2"></i>Tech Solutions Inc.</h3>
+                <p><i class="bi bi-geo-alt-fill me-1"></i>Supervisor Portal</p>
+            </div>
+
+            <ul class="components">
+                <li class="active">
+                    <a href="supervisor_dashboard.html">
+                        <i class="bi bi-speedometer2"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="attendance_approval.html">
+                        <i class="bi bi-calendar-check"></i>
+                        <span>Attendance Approval</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="evaluation.html">
+                        <i class="bi bi-star-fill"></i>
+                        <span>Evaluation</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="message_management.html">
+                        <i class="bi bi-chat-dots-fill"></i>
+                        <span>Messages</span>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="user-info">
+                <div class="d-flex align-items-center">
+                    <div class="user-avatar me-3">
+                        <i class="bi bi-person-circle"></i>
+                    </div>
+                    <div>
+                        <div class="fw-semibold">John Smith</div>
+                    </div>
+                    <a href="../index.html" class="ms-auto text-white" title="Logout">
+                        <i class="bi bi-box-arrow-right fs-5"></i>
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+        <div id="content">
+            <div class="d-flex align-items-center mb-4">
+                <button type="button" id="sidebarCollapse" class="btn" onclick="toggleSidebar()">
+                    <i class="bi bi-list"></i>
+                </button>
+            </div>
+
+            <div class="dashboard-header">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h2 class="mb-2"><i class="bi bi-calendar-check me-2"></i>Attendance Approval</h2>
+                        <p class="mb-0">Review and approve student attendance logs</p>
+                    </div>
+                    <div class="col-md-4 text-md-end">
+                        <div class="current-date" id="currentDate"></div>
+                        <div class="current-time" id="currentTime"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-wrapper">
+                <!-- Statistics Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-3 mb-3">
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="bi bi-clock-history"></i></div>
+                            <div class="stat-label">Pending Approvals</div>
+                            <div class="stat-value" id="pendingCount">0</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="bi bi-check-circle"></i></div>
+                            <div class="stat-label">Approved This Week</div>
+                            <div class="stat-value" id="approvedCount">0</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="bi bi-x-circle"></i></div>
+                            <div class="stat-label">Declined</div>
+                            <div class="stat-value" id="declinedCount">0</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="bi bi-people"></i></div>
+                            <div class="stat-label">Total Students</div>
+                            <div class="stat-value" id="totalStudents">8</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filter Options -->
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <select class="form-select" id="statusFilter" onchange="filterAttendance()">
+                            <option value="all">All Status</option>
+                            <option value="pending">Pending</option>
+                            <option value="approved">Approved</option>
+                            <option value="declined">Declined</option>
+                        </select>
+                    </div>
+                    <div class="col-md-8">
+                        <input type="text" id="searchAttendance" class="form-control" placeholder="Search by student name or date..." onkeyup="filterAttendance()">
+                    </div>
+                </div>
+
+                <!-- Attendance Table -->
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle" id="attendanceTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Date</th>
+                                <th>Student</th>
+                                <th>Time In</th>
+                                <th>Time Out</th>
+                                <th>Total Hours</th>
+                                <th>Remarks</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </thead>
+                        <tbody id="attendanceTableBody">
+                            <!-- Data loaded via JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+
+    <script>
+        // Sample attendance data
+        let attendanceRecords = [
+            { id: 1, studentId: '2024-001', studentName: 'Juan Dela Cruz', avatar: 'JD', date: '2024-03-20', timeIn: '08:00 AM', timeOut: '05:00 PM', hours: 8, remarks: 'Regular duty', status: 'pending' },
+            { id: 2, studentId: '2024-002', studentName: 'Maria Santos', avatar: 'MS', date: '2024-03-20', timeIn: '08:30 AM', timeOut: '05:30 PM', hours: 8, remarks: 'Traffic delay', status: 'pending' },
+            { id: 3, studentId: '2024-003', studentName: 'John Smith', avatar: 'JS', date: '2024-03-20', timeIn: '07:45 AM', timeOut: '04:45 PM', hours: 8, remarks: 'Early out for appointment', status: 'pending' },
+            { id: 4, studentId: '2024-001', studentName: 'Juan Dela Cruz', avatar: 'JD', date: '2024-03-19', timeIn: '08:00 AM', timeOut: '05:00 PM', hours: 8, remarks: '', status: 'approved' },
+            { id: 5, studentId: '2024-002', studentName: 'Maria Santos', avatar: 'MS', date: '2024-03-19', timeIn: '09:00 AM', timeOut: '06:00 PM', hours: 8, remarks: 'Late arrival', status: 'approved' },
+            { id: 6, studentId: '2024-004', studentName: 'Anna Reyes', avatar: 'AR', date: '2024-03-20', timeIn: '08:15 AM', timeOut: '05:15 PM', hours: 8, remarks: '', status: 'pending' },
+            { id: 7, studentId: '2024-005', studentName: 'Pedro Gonzales', avatar: 'PG', date: '2024-03-19', timeIn: '08:00 AM', timeOut: '04:30 PM', hours: 7.5, remarks: 'Doctor appointment', status: 'declined' }
+        ];
+
+        function loadAttendanceTable() {
+            const tbody = document.getElementById('attendanceTableBody');
+            let html = '';
+            let pending = 0, approved = 0, declined = 0;
+
+            attendanceRecords.forEach(record => {
+                if (record.status === 'pending') pending++;
+                else if (record.status === 'approved') approved++;
+                else if (record.status === 'declined') declined++;
+
+                let statusBadge = '';
+                if (record.status === 'pending') {
+                    statusBadge = '<span class="badge-pending">Pending</span>';
+                } else if (record.status === 'approved') {
+                    statusBadge = '<span class="badge-approved">Approved</span>';
+                } else {
+                    statusBadge = '<span class="badge-declined">Declined</span>';
+                }
+
+                let actionButtons = '';
+                if (record.status === 'pending') {
+                    actionButtons = `
+                        <button class="btn btn-sm btn-success" onclick="approveAttendance(${record.id})" title="Approve">
+                            <i class="bi bi-check-lg"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="declineAttendance(${record.id})" title="Decline">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    `;
+                } else {
+                    actionButtons = `
+                        <button class="btn btn-sm btn-outline-secondary" disabled title="Already processed">
+                            <i class="bi bi-check-circle"></i>
+                        </button>
+                    `;
+                }
+
+                html += `
+                    <tr>
+                        <td>${record.date}</td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="student-avatar me-2">${record.avatar}</div>
+                                <div>
+                                    <div class="fw-semibold">${record.studentName}</div>
+                                    <small class="text-muted">${record.studentId}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>${record.timeIn}</td>
+                        <td>${record.timeOut}</td>
+                        <td>${record.hours}</td>
+                        <td>${record.remarks || '-'}</td>
+                        <td>${statusBadge}</td>
+                        <td class="action-buttons">${actionButtons}</td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = html;
+            document.getElementById('pendingCount').innerHTML = pending;
+            document.getElementById('approvedCount').innerHTML = approved;
+            document.getElementById('declinedCount').innerHTML = declined;
+        }
+
+        function approveAttendance(id) {
+            Swal.fire({
+                title: 'Approve Attendance?',
+                text: 'This will mark the attendance as approved.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#28a745',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, approve it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const record = attendanceRecords.find(r => r.id === id);
+                    if (record) {
+                        record.status = 'approved';
+                        loadAttendanceTable();
+                        Swal.fire('Approved!', `${record.studentName}'s attendance has been approved.`, 'success');
+                    }
+                }
+            });
+        }
+
+        function declineAttendance(id) {
+            Swal.fire({
+                title: 'Decline Attendance?',
+                text: 'Please provide a reason for declining.',
+                icon: 'warning',
+                input: 'textarea',
+                inputLabel: 'Reason for declining',
+                inputPlaceholder: 'Enter your reason here...',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, decline it!'
+            }).then((result) => {
+                if (result.isConfirmed && result.value) {
+                    const record = attendanceRecords.find(r => r.id === id);
+                    if (record) {
+                        record.status = 'declined';
+                        record.remarks = result.value;
+                        loadAttendanceTable();
+                        Swal.fire('Declined!', `${record.studentName}'s attendance has been declined. Reason: ${result.value}`, 'error');
+                    }
+                } else if (result.isConfirmed && !result.value) {
+                    Swal.fire('Error', 'Please provide a reason for declining.', 'error');
+                }
+            });
+        }
+
+        function filterAttendance() {
+            const status = document.getElementById('statusFilter').value;
+            const searchTerm = document.getElementById('searchAttendance').value.toLowerCase();
+            const rows = document.querySelectorAll('#attendanceTableBody tr');
+
+            rows.forEach(row => {
+                const rowStatus = row.querySelector('td:nth-child(7) span').textContent.toLowerCase();
+                const rowText = row.textContent.toLowerCase();
+                let show = true;
+
+                if (status !== 'all' && rowStatus !== status) show = false;
+                if (searchTerm && !rowText.includes(searchTerm)) show = false;
+
+                row.style.display = show ? '' : 'none';
+            });
+        }
+
+        function updateDateTime() {
+            const now = new Date();
+            const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit' };
+            document.getElementById('currentDate').innerHTML = now.toLocaleDateString('en-US', dateOptions);
+            document.getElementById('currentTime').innerHTML = now.toLocaleTimeString('en-US', timeOptions);
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('content').classList.toggle('active');
+            document.querySelector('.overlay').classList.toggle('active');
+        }
+
+        setInterval(updateDateTime, 1000);
+        updateDateTime();
+        loadAttendanceTable();
+
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const toggleBtn = document.getElementById('sidebarCollapse');
+            if (window.innerWidth <= 768 && !sidebar.contains(event.target) && !toggleBtn.contains(event.target) && sidebar.classList.contains('active')) {
+                sidebar.classList.remove('active');
+                document.getElementById('content').classList.remove('active');
+                document.querySelector('.overlay').classList.remove('active');
+            }
+        });
+
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                document.getElementById('sidebar').classList.remove('active');
+                document.getElementById('content').classList.remove('active');
+                document.querySelector('.overlay').classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>

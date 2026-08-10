@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Establishment Management - OJT Monitoring System</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --primary-hover: #4338ca;
+            --accent-color: #06b6d4;
+            --sidebar-gradient: linear-gradient(180deg, #1e1b4b 0%, #312e81 100%);
+            --card-border-radius: 16px;
+            --transition-speed: 0.25s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%) fixed;
+            background-size: cover;
+            overflow-x: hidden;
+            font-family: 'Plus Jakarta Sans', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            color: #1e293b;
+        }
+
+        /* Sidebar Styles */
+        .wrapper {
+            display: flex;
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        #sidebar {
+            min-width: 280px;
+            max-width: 280px;
+            background: var(--sidebar-gradient);
+            color: #fff;
+            transition: all var(--transition-speed);
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            z-index: 1000;
+            box-shadow: 4px 0 25px rgba(0, 0, 0, 0.25);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #sidebar.active {
+            left: -280px;
+        }
+
+        #sidebar .sidebar-header {
+            padding: 28px 24px;
+            background: rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        #sidebar .sidebar-header h3 {
+            margin-bottom: 6px;
+            font-weight: 700;
+            font-size: 1.35rem;
+            letter-spacing: -0.3px;
+        }
+
+        #sidebar .sidebar-header p {
+            margin-bottom: 0;
+            font-size: 0.825rem;
+            opacity: 0.75;
+        }
+
+        #sidebar ul.components {
+            padding: 20px 12px;
+            list-style: none;
+            margin-bottom: auto;
+        }
+
+        #sidebar ul li {
+            margin-bottom: 6px;
+        }
+
+        #sidebar ul li a {
+            padding: 12px 16px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            color: rgba(255, 255, 255, 0.75);
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all var(--transition-speed);
+        }
+
+        #sidebar ul li a i {
+            margin-right: 14px;
+            font-size: 1.25rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        #sidebar ul li a:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            transform: translateX(4px);
+        }
+
+        #sidebar ul li.active a {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+            color: #ffffff;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4);
+        }
+
+        #sidebar .user-info {
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.25);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        #sidebar .user-info .user-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            color: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        
+        /* Main Content Styles */
+        #content {
+            width: 100%;
+            margin-left: 280px;
+            padding: 20px;
+            min-height: 100vh;
+            transition: all 0.3s ease-in-out;
+        }
+        
+        #content.active {
+            margin-left: 0;
+        }
+        
+        /* Sidebar Toggle Button */
+        #sidebarCollapse {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: #fff;
+            padding: 10px 15px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+            z-index: 1001;
+        }
+        
+        #sidebarCollapse:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+        }
+        
+        .content-wrapper {
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 20px;
+        }
+        
+        /* Establishment Management Specific Styles */
+        .section-header {
+            color: white;
+            border-radius: 15px;
+            padding-bottom: 5px;
+        }
+        
+        .form-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .form-section-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #dee2e6;
+        }
+        
+        .required-field::after {
+            content: " *";
+            color: red;
+        }
+        
+        .establishment-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border: 1px solid #e9ecef;
+            transition: all 0.3s;
+        }
+        
+        .establishment-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.15);
+        }
+        
+        .coordinator-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            background: #e7f5ff;
+            color: #0d6efd;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .avatar-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .avatar-sm {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+        
+        .overlay.active {
+            opacity: 1;
+        }
+        
+        @media (max-width: 768px) {
+            #sidebar {
+                left: -280px;
+            }
+            
+            #sidebar.active {
+                left: 0;
+            }
+            
+            #content {
+                margin-left: 0 !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <!-- Overlay for mobile -->
+        <div class="overlay" onclick="toggleSidebar()"></div>
+        
+        <!-- Left Sidebar Navigation -->
+        <nav id="sidebar">
+            <div class="sidebar-header">
+                <h3><i class="bi bi-building me-2"></i>WPH Institute</h3>
+                <p><i class="bi bi-geo-alt-fill me-1"></i>Barangay San Francisco</p>
+            </div>
+
+            <ul class="components">
+                <li>
+                    <a href="dashboard.html">
+                        <i class="bi bi-speedometer2"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="active">
+                    <a href="coordinator_management.html">
+                        <i class="bi bi-building"></i>
+                        <span>Establishment Management</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="student_management.html">
+                        <i class="bi bi-people-fill"></i>
+                        <span>Student Management</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="attendance_management.html">
+                        <i class="bi bi-calendar-check"></i>
+                        <span>Attendance</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="message_management.html">
+                        <i class="bi bi-chat-dots-fill"></i>
+                        <span>Messages</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="evaluation.html">
+                        <i class="bi bi-star-fill"></i>
+                        <span>Evaluations</span>
+                    </a>
+                </li>
+                <!-- <li>
+                    <a href="#">
+                        <i class="bi bi-graph-up"></i>
+                        <span>Reports</span>
+                    </a>
+                </li> -->
+            </ul>
+
+            <div class="user-info">
+                <div class="d-flex align-items-center">
+                    <div class="user-avatar me-3">
+                        <i class="bi bi-person-circle"></i>
+                    </div>
+                    <div>
+                        <div class="fw-semibold">Admin</div>
+                    </div>
+                    <a href="../index.html" class="ms-auto text-white" title="Logout">
+                        <i class="bi bi-box-arrow-right fs-5"></i>
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Page Content -->
+        <div id="content">
+            <!-- Top Navigation -->
+            <div class="d-flex align-items-center mb-4">
+                <button type="button" id="sidebarCollapse" class="btn" onclick="toggleSidebar()">
+                    <i class="bi bi-list"></i>
+                </button>
+            </div>
+
+            <!-- Header -->
+            <div class="section-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="mb-2"><i class="bi bi-building me-2"></i>Establishment Management</h2>
+                        <p class="mb-0">Manage partner establishments and their assigned coordinators</p>
+                    </div>
+                    <div style="font-size: 20px;">
+                        <span class="badge bg-light text-dark p-3">
+                            <i class="bi bi-building"></i> Total Establishments: <span id="totalEstablishments">18</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="content-wrapper">
+                <!-- Tabs -->
+                <ul class="nav nav-tabs mb-4" id="establishmentTabs" role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link active" id="add-tab" data-bs-toggle="tab" data-bs-target="#add" type="button">
+                            <i class="bi bi-plus-circle me-2"></i>Add Establishment
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" id="list-tab" data-bs-toggle="tab" data-bs-target="#list" type="button">
+                            <i class="bi bi-list-ul me-2"></i>Establishments List
+                        </button>
+                    </li>
+                </ul>
+
+                <!-- Tab Content -->
+                <div class="tab-content">
+                    <!-- ADD ESTABLISHMENT TAB -->
+                    <div class="tab-pane fade show active" id="add">
+                        <form id="addEstablishmentForm">
+                            <!-- Establishment Details Section -->
+                            <div class="form-section">
+                                <div class="form-section-title">
+                                    <i class="bi bi-building me-2"></i>Establishment Details
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label required-field fw-semibold">Establishment Name</label>
+                                        <input type="text" class="form-control" id="estName" placeholder="e.g., Tech Solutions Inc." required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label required-field fw-semibold">Industry Type</label>
+                                        <select class="form-select" id="estIndustry" required>
+                                            <option value="">Select Industry</option>
+                                            <option>Information Technology</option>
+                                            <option>Business Process Outsourcing</option>
+                                            <option>Banking & Finance</option>
+                                            <option>Hospitality & Tourism</option>
+                                            <option>Retail & Commerce</option>
+                                            <option>Healthcare</option>
+                                            <option>Education</option>
+                                            <option>Manufacturing</option>
+                                            <option>Construction</option>
+                                            <option>Telecommunications</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-semibold">Street Address</label>
+                                        <input type="text" class="form-control" id="estStreet" placeholder="Street building, unit" >
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label required-field fw-semibold">Barangay</label>
+                                        <input type="text" class="form-control" id="estBarangay" placeholder="Barangay" required>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label required-field fw-semibold">City/Municipality</label>
+                                        <input type="text" class="form-control" id="estCity" placeholder="City" required>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label required-field fw-semibold">Province</label>
+                                        <input type="text" class="form-control" id="estProvince" placeholder="Province" required>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label fw-semibold">Zip Code</label>
+                                        <input type="text" class="form-control" id="estZip" placeholder="Zip code" maxlength="4" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Coordinator Details Section -->
+                            <div class="form-section">
+                                <div class="form-section-title">
+                                    <i class="bi bi-person-badge me-2"></i>Establishment Coordinator Details
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label required-field fw-semibold">First Name</label>
+                                        <input type="text" class="form-control" id="coordFirstname" placeholder="First name" required>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label required-field fw-semibold">Last Name</label>
+                                        <input type="text" class="form-control" id="coordLastname" placeholder="Last name" required>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label fw-semibold">Middle Initial</label>
+                                        <input type="text" class="form-control" id="coordMiddle" placeholder="M.I." maxlength="2">
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-3 mb-3">
+                                        <label class="form-label required-field fw-semibold">Age</label>
+                                        <input type="number" class="form-control" id="coordAge" placeholder="Age" min="18" max="70" required>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label class="form-label required-field fw-semibold">Gender</label>
+                                        <select class="form-select" id="coordGender" required>
+                                            <option value="">Select Gender</option>
+                                            <option>Male</option>
+                                            <option>Female</option>
+                                            <option>Prefer not to say</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label required-field fw-semibold">Position/Title</label>
+                                        <input type="text" class="form-control" id="coordPosition" placeholder="e.g., HR Manager, IT Director" required>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-12 mb-3">
+                                        <label class="form-label required-field fw-semibold">Complete Address</label>
+                                        <textarea class="form-control" id="coordAddress" rows="2" placeholder="House/Unit No., Street, Barangay, City, Province" required></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label required-field fw-semibold">Contact Number</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light"><i class="bi bi-phone"></i></span>
+                                            <input type="tel" class="form-control" id="coordContact" placeholder="09123456789" maxlength="11" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label required-field fw-semibold">Email Address</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light"><i class="bi bi-envelope"></i></span>
+                                            <input type="email" class="form-control" id="coordEmail" placeholder="coordinator@company.com" required>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Form Actions -->
+                            <div class="d-flex justify-content-end gap-2 mt-4">
+                                <button type="reset" class="btn btn-secondary px-4" onclick="resetForm()">
+                                    <i class="bi bi-arrow-counterclockwise me-2"></i>Clear
+                                </button>
+                                <button type="submit" class="btn btn-primary px-5">
+                                    <i class="bi bi-save me-2"></i>Save Establishment
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- ESTABLISHMENTS LIST TAB -->
+                    <div class="tab-pane fade" id="list">
+                        <!-- Search and Filter -->
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                                    <input type="text" class="form-control" id="tableSearch" placeholder="Search by establishment name, industry, coordinator...">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Establishments Table -->
+                        <div class="table-responsive">
+                            <table class="table table-hover table-striped" id="establishmentsTable">
+                                <thead class="table-primary">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Establishment</th>
+                                        <th>Industry</th>
+                                        <th>Location</th>
+                                        <th>Coordinator</th>
+                                        <th>Contact</th>
+                                        <th>Students</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="establishmentsTableBody">
+                                    <!-- Data will be populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        <nav aria-label="Table pagination" class="mt-4">
+                            <ul class="pagination justify-content-center" id="tablePagination">
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#"><i class="bi bi-chevron-left"></i></a>
+                                </li>
+                                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                <li class="page-item"><a class="page-link" href="#">4</a></li>
+                                <li class="page-item">
+                                    <a class="page-link" href="#"><i class="bi bi-chevron-right"></i></a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Establishment Modal -->
+    <div class="modal fade" id="viewEstablishmentModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="bi bi-building me-2"></i>Establishment Details</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="viewModalBody">
+                    <!-- Content will be populated by JavaScript -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="printEstablishment()">Print</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Establishment Modal -->
+    <div class="modal fade" id="editEstablishmentModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-warning">
+                    <h5 class="modal-title"><i class="bi bi-pencil me-2"></i>Edit Establishment</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Edit form would go here - similar to add form but populated -->
+                    <p class="text-muted">Edit functionality would pre-populate the form with existing data</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="updateEstablishment()">Update</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <!-- DataTables -->
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+    <script>
+        // Sample establishment data
+        let establishments = [
+            {
+                id: 'EST-001',
+                name: 'Tech Solutions Inc.',
+                industry: 'Information Technology',
+                address: '123 Tech Ave., Barangay San Antonio, Makati City, Makati',
+                city: 'Makati',
+                province: 'Metro Manila',
+                barangay: 'San Antonio',
+                street: '123 Tech Ave.',
+                zipCode: '1203',
+                status: 'active',
+                coordinator: {
+                    firstName: 'John',
+                    lastName: 'Smith',
+                    middleInitial: 'D',
+                    name: 'John D. Smith',
+                    age: '35',
+                    gender: 'Male',
+                    position: 'HR Manager',
+                    address: 'Unit 123, Tech Tower, Makati City',
+                    contact: '09171234567',
+                    email: 'john.smith@techsolutions.com'
+                },
+                students: 28
+            },
+            {
+                id: 'EST-002',
+                name: 'Digital Innovations Corp.',
+                industry: 'Information Technology',
+                address: '456 Digital St., Barangay Fort Bonifacio, Taguig City, Taguig',
+                city: 'Taguig',
+                province: 'Metro Manila',
+                barangay: 'Fort Bonifacio',
+                street: '456 Digital St.',
+                zipCode: '1634',
+                status: 'active',
+                coordinator: {
+                    firstName: 'Maria',
+                    lastName: 'Santos',
+                    middleInitial: 'C',
+                    name: 'Maria C. Santos',
+                    age: '42',
+                    gender: 'Female',
+                    position: 'IT Director',
+                    address: 'Suite 456, Digital Hub, BGC',
+                    contact: '09179876543',
+                    email: 'maria.santos@digitalinnovations.com'
+                },
+                students: 22
+            },
+            {
+                id: 'EST-003',
+                name: 'Business Analytics Co.',
+                industry: 'Business Process Outsourcing',
+                address: '789 Analytics Rd., Barangay San Antonio, Pasig City, Pasig',
+                city: 'Pasig',
+                province: 'Metro Manila',
+                barangay: 'San Antonio',
+                street: '789 Analytics Rd.',
+                zipCode: '1605',
+                status: 'active',
+                coordinator: {
+                    firstName: 'Robert',
+                    lastName: 'Chen',
+                    middleInitial: 'L',
+                    name: 'Robert L. Chen',
+                    age: '38',
+                    gender: 'Male',
+                    position: 'Operations Head',
+                    address: 'Unit 789, Analytics Tower, Ortigas',
+                    contact: '09172345678',
+                    email: 'robert.chen@businessanalytics.com'
+                },
+                students: 18
+            },
+            {
+                id: 'EST-004',
+                name: 'Hospitality Services Group',
+                industry: 'Hospitality & Tourism',
+                address: '321 Hotel Row, Barangay 699, Ermita, Manila',
+                city: 'Manila',
+                province: 'Metro Manila',
+                barangay: '699',
+                street: '321 Hotel Row',
+                zipCode: '1000',
+                status: 'inactive',
+                coordinator: {
+                    firstName: 'Lisa',
+                    lastName: 'Wong',
+                    middleInitial: 'M',
+                    name: 'Lisa M. Wong',
+                    age: '45',
+                    gender: 'Female',
+                    position: 'HR Director',
+                    address: 'Room 321, Hotel Plaza, Ermita',
+                    contact: '09175678901',
+                    email: 'lisa.wong@hospitalityservices.com'
+                },
+                students: 15
+            },
+            {
+                id: 'EST-005',
+                name: 'Accounting Partners Ltd.',
+                industry: 'Banking & Finance',
+                address: '555 Finance St., Barangay Bel-Air, Makati City, Makati',
+                city: 'Makati',
+                province: 'Metro Manila',
+                barangay: 'Bel-Air',
+                street: '555 Finance St.',
+                zipCode: '1209',
+                status: 'active',
+                coordinator: {
+                    firstName: 'Mike',
+                    lastName: 'Johnson',
+                    middleInitial: 'P',
+                    name: 'Mike P. Johnson',
+                    age: '52',
+                    gender: 'Male',
+                    position: 'Finance Manager',
+                    address: 'Suite 555, Finance Tower, Salcedo Village',
+                    contact: '09174567890',
+                    email: 'mike.johnson@accountingpartners.com'
+                },
+                students: 12
+            }
+        ];
+
+        function messageStudent(studentId) {
+            
+            // Navigate to message management page
+            window.location.href = 'message_management.html';
+        }
+
+        // Load establishments table
+        function loadEstablishmentsTable() {
+            const tbody = document.getElementById('establishmentsTableBody');
+            let html = '';
+            
+            establishments.forEach(est => {
+                let statusBadge = '';
+                if (est.status === 'active') {
+                    statusBadge = '<span class="status-badge status-active">Active</span>';
+                } else if (est.status === 'inactive') {
+                    statusBadge = '<span class="status-badge status-inactive">Inactive</span>';
+                } else {
+                    statusBadge = '<span class="status-badge status-pending">Pending</span>';
+                }
+                
+                html += `
+                    <tr>
+                        <td>${est.id}</td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-circle me-2">${est.name.charAt(0)}</div>
+                                <div>
+                                    <div class="fw-semibold">${est.name}</div>
+                                    <small class="text-muted">${est.coordinator.email}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>${est.industry}</td>
+                        <td>${est.city}</td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div>
+                                    <div class="fw-semibold">${est.coordinator.name}</div>
+                                    <small class="text-muted">${est.coordinator.position}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <small>${est.coordinator.contact}</small>
+                        </td>
+                        <td>
+                            <span class="fw-semibold">${est.students}</span>
+                        </td>
+                        <td>${statusBadge}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-info" onclick="viewEstablishment('${est.id}')" title="View">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-primary" onclick="editEstablishment('${est.id}')" title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteEstablishment('${est.id}')" title="Delete">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-success" onclick="messageStudent('${est.id}')">
+                                <i class="bi bi-chat-dots-fill"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html;
+            
+            // Update summary cards
+            document.getElementById('totalEstablishments').innerHTML = establishments.length;
+            
+            // Re-attach search functionality after table is loaded
+            attachSearchFunctionality();
+        }
+
+        // Search functionality - separate function
+        function attachSearchFunctionality() {
+            const searchInput = document.getElementById('tableSearch');
+            
+            // Remove existing event listener to prevent duplicates
+            searchInput.removeEventListener('keyup', searchHandler);
+            
+            // Add new event listener
+            searchInput.addEventListener('keyup', searchHandler);
+        }
+
+        // Search handler function
+        function searchHandler() {
+            const searchTerm = this.value.toLowerCase();
+            const rows = document.querySelectorAll('#establishmentsTableBody tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        // Initialize
+        loadEstablishmentsTable();
+
+        // Toggle sidebar
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('content').classList.toggle('active');
+            document.querySelector('.overlay').classList.toggle('active');
+        }
+
+
+
+        // Handle form submission
+        document.getElementById('addEstablishmentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Get form values
+            const newEstablishment = {
+                id: 'EST-' + String(establishments.length + 1).padStart(3, '0'),
+                name: document.getElementById('estName').value,
+                industry: document.getElementById('estIndustry').value,
+                address: document.getElementById('estStreet').value + ', ' + document.getElementById('estBarangay').value + ', ' + 
+                         document.getElementById('estCity').value + ', ' + document.getElementById('estProvince').value + 
+                         (document.getElementById('estZip').value ? ' ' + document.getElementById('estZip').value : ''),
+                city: document.getElementById('estCity').value,
+                province: document.getElementById('estProvince').value,
+                barangay: document.getElementById('estBarangay').value,
+                street: document.getElementById('estStreet').value,
+                zipCode: document.getElementById('estZip').value,
+                contact: '', // Remove this if you removed establishment contact field
+                email: '',   // Remove this if you removed establishment email field
+                status: 'active', // Default status
+                coordinator: {
+                    firstName: document.getElementById('coordFirstname').value,
+                    lastName: document.getElementById('coordLastname').value,
+                    middleInitial: document.getElementById('coordMiddle').value,
+                    name: document.getElementById('coordFirstname').value + ' ' + 
+                          (document.getElementById('coordMiddle').value ? document.getElementById('coordMiddle').value + '. ' : '') + 
+                          document.getElementById('coordLastname').value,
+                    age: document.getElementById('coordAge').value,
+                    gender: document.getElementById('coordGender').value,
+                    position: document.getElementById('coordPosition').value,
+                    address: document.getElementById('coordAddress').value,
+                    contact: document.getElementById('coordContact').value,
+                    email: document.getElementById('coordEmail').value
+                },
+                students: 0 // Default value since maxStudents field was removed
+            };
+            
+            establishments.push(newEstablishment);
+            loadEstablishmentsTable();
+            
+            alert('Establishment added successfully!');
+            this.reset();
+            
+            // Switch to list tab
+            document.getElementById('list-tab').click();
+        });
+
+        // Reset form
+        function resetForm() {
+            document.getElementById('addEstablishmentForm').reset();
+        }
+
+        // View establishment
+        function viewEstablishment(id) {
+            const est = establishments.find(e => e.id === id);
+            if (est) {
+                const modalBody = document.getElementById('viewModalBody');
+                modalBody.innerHTML = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold">Establishment Information</h6>
+                            <p><strong>Name:</strong> ${est.name}</p>
+                            <p><strong>Industry:</strong> ${est.industry}</p>
+                            <p><strong>Street:</strong> ${est.street || 'N/A'}</p>
+                            <p><strong>Barangay:</strong> ${est.barangay}</p>
+                            <p><strong>City:</strong> ${est.city}</p>
+                            <p><strong>Province:</strong> ${est.province}</p>
+                            <p><strong>Zip Code:</strong> ${est.zipCode || 'N/A'}</p>
+                            <p><strong>Status:</strong> <span class="status-badge status-${est.status}">${est.status}</span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="fw-bold">Coordinator Information</h6>
+                            <p><strong>Full Name:</strong> ${est.coordinator.name}</p>
+                            <p><strong>Age:</strong> ${est.coordinator.age}</p>
+                            <p><strong>Gender:</strong> ${est.coordinator.gender}</p>
+                            <p><strong>Position:</strong> ${est.coordinator.position}</p>
+                            <p><strong>Address:</strong> ${est.coordinator.address}</p>
+                            <p><strong>Contact:</strong> ${est.coordinator.contact}</p>
+                            <p><strong>Email:</strong> ${est.coordinator.email}</p>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold">Student Statistics</h6>
+                            <p><strong>Current Students:</strong> ${est.students}</p>
+                        </div>
+                    </div>
+                `;
+                
+                new bootstrap.Modal(document.getElementById('viewEstablishmentModal')).show();
+            }
+        }
+
+        // Edit establishment
+        function editEstablishment(id) {
+            new bootstrap.Modal(document.getElementById('editEstablishmentModal')).show();
+        }
+
+        // Update establishment
+        function updateEstablishment() {
+            alert('Establishment updated successfully!');
+            bootstrap.Modal.getInstance(document.getElementById('editEstablishmentModal')).hide();
+        }
+
+        // Delete establishment
+        function deleteEstablishment(id) {
+            if (confirm('Are you sure you want to delete this establishment?')) {
+                establishments = establishments.filter(e => e.id !== id);
+                loadEstablishmentsTable();
+                alert('Establishment deleted successfully!');
+            }
+        }
+
+        // Filter by status
+        function filterByStatus() {
+            const status = document.getElementById('statusFilter').value;
+            alert(`Filtering by: ${status || 'All status'}`);
+        }
+
+        // Print establishment
+        function printEstablishment() {
+            window.print();
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                document.getElementById('sidebar').classList.remove('active');
+                document.getElementById('content').classList.remove('active');
+                document.querySelector('.overlay').classList.remove('active');
+            }
+        });
+
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const toggleBtn = document.getElementById('sidebarCollapse');
+            
+            if (window.innerWidth <= 768) {
+                if (!sidebar.contains(event.target) && !toggleBtn.contains(event.target) && sidebar.classList.contains('active')) {
+                    sidebar.classList.remove('active');
+                    document.getElementById('content').classList.remove('active');
+                    document.querySelector('.overlay').classList.remove('active');
+                }
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            attachSearchFunctionality();
+        });
+    </script>
+</body>
+</html>
