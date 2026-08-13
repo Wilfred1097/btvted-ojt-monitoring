@@ -196,9 +196,25 @@
         }
 
         .contacts-header {
-            padding: 20px;
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        .contacts-header .btn {
+            font-size: 0.825rem;
+            font-weight: 600;
+            box-shadow: 0 2px 6px rgba(79, 70, 229, 0.25);
+            transition: all 0.2s ease;
+        }
+
+        .contacts-header .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(79, 70, 229, 0.35);
+        }
+
+        .contacts-search {
+            padding: 15px 20px;
             border-bottom: 1px solid #e9ecef;
-            background: white;
         }
 
         .contacts-search {
@@ -700,7 +716,7 @@
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <h2 class="mb-2"><i class="bi bi-chat-dots-fill"></i> Messages</h2>
-                        <p class="mb-0">Chat with students and Supervisors</p>
+                        <p class="mb-0">Chat with Students and Faculty Adviser</p>
                     </div>
                 </div>
             </div>
@@ -709,8 +725,13 @@
             <div class="message-dashboard">
                 <!-- Contacts Sidebar -->
                 <div class="contacts-sidebar">
-                    <div class="contacts-header">
+                    <div class="contacts-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0"><i class="bi bi-chat-dots-fill me-2 text-primary"></i>Messages</h5>
+                        <!-- New Message Button -->
+                        <button type="button" class="btn btn-primary btn-sm d-flex align-items-center gap-1 rounded-pill px-3" onclick="openNewMessageModal()">
+                            <i class="bi bi-pencil-square"></i>
+                            <span>New Message</span>
+                        </button>
                     </div>
                     
                     <div class="contacts-search">
@@ -793,6 +814,8 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <!-- Sweetalert -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
         // Sample data for contacts
@@ -812,18 +835,17 @@
                 position: 'OJT Student'
             },
             {
-                id: 'STU-002',
-                name: 'Maria C. Santos',
-                type: 'student',
-                avatar: 'MS',
-                lastMessage: 'Meeting scheduled for tomorrow',
-                lastMessageTime: '9:15 AM',
-                unread: 1,
+                id: 'FAC-001',
+                name: 'Dr. Roberto Santos',
+                type: 'faculty',
+                avatar: 'RS',
+                lastMessage: 'Please submit your weekly report.',
+                lastMessageTime: '11:00 AM',
+                unread: 0,
                 online: true,
-                email: 'maria.s@wphi.edu',
-                phone: '0288888888',
-                establishment: 'Tech Solutions Inc.',
-                position: 'OJT Student'
+                email: 'roberto.santos@wphi.edu',
+                phone: '09181234567',
+                position: 'Faculty Adviser'
             }
         ];
 
@@ -836,7 +858,7 @@
                 { type: 'sent', message: 'Yes, you can submit a request through the attendance page. I\'ll approve it once submitted.', time: '9:45 AM', date: '2024-03-15', status: 'read' },
                 { type: 'received', message: 'Thank you for the information!', time: '10:30 AM', date: '2024-03-15', status: 'read' }
             ],
-            'STU-002': [
+            'FAC-001': [
                 { type: 'received', message: 'Hello Supervisor, want to tell you something important.', time: '8:30 AM', date: '2024-03-15', status: 'read' },
                 { type: 'sent', message: 'Sure, what time works best for you?', time: '8:45 AM', date: '2024-03-15', status: 'read' },
                 { type: 'received', message: 'How about 2 PM tomorrow?', time: '9:00 AM', date: '2024-03-15', status: 'read' },
@@ -853,9 +875,11 @@
 
             contacts.forEach(contact => {
                 const unreadBadge = contact.unread > 0 ? `<span class="badge-unread">${contact.unread}</span>` : '';
-                const typeBadge = contact.type === 'student' ? 
-                    '<span class="contact-type-badge type-student">Student</span>' : 
-                    '<span class="contact-type-badge type-establishment">Establishment</span>';
+                const typeBadge = contact.type === 'student' 
+                    ? '<span class="contact-type-badge type-student">Student</span>' 
+                    : contact.type === 'establishment' 
+                    ? '<span class="contact-type-badge type-establishment">Establishment</span>' 
+                    : '<span class="contact-type-badge type-faculty">Faculty Adviser</span>';
 
                 html += `
                     <div class="contact-item ${currentContactId === contact.id ? 'active' : ''}" onclick="selectContact('${contact.id}')">
@@ -937,6 +961,69 @@
 
             messagesContainer.innerHTML = html;
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function openNewMessageModal() {
+            const allowedContacts = contacts.filter(c => c.type === 'faculty' || c.type === 'student');
+
+            // Guard Clause: Check if there are any allowed contacts
+            if (allowedContacts.length === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'No Available Contacts',
+                    text: 'There are currently no Faculty Advisers or Establishments available to message.',
+                    confirmButtonColor: '#4f46e5'
+                });
+                return;
+            }
+
+            let selectOptions = {};
+            allowedContacts.forEach(contact => {
+                // FIXED: Correct label assignment for Faculty Adviser vs Establishment
+                const typeLabel = contact.type === 'faculty' ? 'Faculty Adviser' : 'Establishment';
+                selectOptions[contact.id] = `${contact.name} (${typeLabel})`;
+            });
+
+            Swal.fire({
+                title: 'New Message',
+                text: 'You can choose a contact here to start a conversation. Messages can only be sent to Faculty Advisers and Establishments.',
+                icon: 'info',
+                input: 'select',
+                inputOptions: selectOptions,
+                inputPlaceholder: 'Select a contact...',
+                showCancelButton: true,
+                confirmButtonText: 'Start Chat',
+                confirmButtonColor: '#4f46e5',
+                cancelButtonColor: '#64748b',
+                customClass: {
+                    popup: 'rounded-4',
+                    confirmButton: 'px-4 py-2 rounded-3',
+                    cancelButton: 'px-4 py-2 rounded-3'
+                },
+                inputValidator: (value) => {
+                    if (!value) {
+                        return 'Please select a contact to proceed';
+                    }
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const selectedContactId = result.value;
+                    const selectedContact = contacts.find(c => c.id === selectedContactId);
+                    
+                    if (typeof selectContact === 'function') {
+                        selectContact(selectedContactId);
+                    }
+                    
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'success',
+                        title: `Chat started with ${selectedContact.name}`,
+                        showConfirmButton: false,
+                        timer: 2500
+                    });
+                }
+            });
         }
 
         // Send message
