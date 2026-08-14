@@ -5,68 +5,111 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Faculty Adviser Dashboard - OJT Monitoring</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <style>
         :root {
-            --brand-primary: #1e3a8a;
-            /* Deep Navy */
-            --brand-secondary: #0d9488;
-            /* Modern Teal */
-            --brand-dark: #0f172a;
-            /* Slate Dark */
-            --brand-accent: #f59e0b;
-            /* Warm Amber */
+            --primary-color: #4f46e5;
+            --primary-hover: #4338ca;
+            --accent-color: #06b6d4;
+            --sidebar-gradient: linear-gradient(180deg, #1e1b4b 0%, #312e81 100%);
+            --card-border-radius: 16px;
+            --transition-speed: 0.25s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
         body {
-            background: linear-gradient(135deg, rgba(15, 23, 42, 0.88), rgba(30, 58, 138, 0.85)),
-                url('assets/images/west-prime.jpg') no-repeat center center fixed;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%) fixed;
             background-size: cover;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            min-height: 100vh;
             overflow-x: hidden;
+            font-family: 'Plus Jakarta Sans', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            color: #1e293b;
         }
 
+        /* Sidebar Styles */
         .wrapper {
             display: flex;
+            width: 100%;
+            min-height: 100vh;
         }
 
         #sidebar {
-            min-width: 260px;
-            max-width: 260px;
-            background: var(--brand-dark);
+            min-width: 280px;
+            max-width: 280px;
+            background: var(--sidebar-gradient);
             color: #fff;
-            height: 100vh;
+            transition: all var(--transition-speed);
             position: fixed;
-            transition: all 0.3s;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            z-index: 1000;
+            box-shadow: 4px 0 25px rgba(0, 0, 0, 0.25);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #sidebar.active {
+            left: -280px;
         }
 
         #sidebar .sidebar-header {
-            padding: 1rem 1.5rem;
+            padding: 28px 24px;
             background: rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         #sidebar .sidebar-header h3 {
-            margin: 0;
+            margin-bottom: 6px;
             font-weight: 700;
+            font-size: 1.35rem;
+            letter-spacing: -0.3px;
+        }
+
+        #sidebar .sidebar-header p {
+            margin-bottom: 0;
+            font-size: 0.825rem;
+            opacity: 0.75;
         }
 
         #sidebar ul.components {
-            padding: 1rem;
+            padding: 20px 12px;
             list-style: none;
+            margin-bottom: auto;
+        }
+
+        #sidebar ul li {
+            margin-bottom: 6px;
         }
 
         #sidebar ul li a {
-            padding: 0.75rem 1rem;
+            padding: 12px 16px;
+            font-size: 0.95rem;
+            font-weight: 500;
             display: flex;
             align-items: center;
             color: rgba(255, 255, 255, 0.75);
             text-decoration: none;
-            border-radius: 0.5rem;
-            transition: all 0.25s;
+            border-radius: 12px;
+            transition: all var(--transition-speed);
+        }
+
+        #sidebar ul li a i {
+            margin-right: 14px;
+            font-size: 1.25rem;
+            width: 24px;
+            text-align: center;
         }
 
         #sidebar ul li a:hover {
@@ -76,68 +119,282 @@
         }
 
         #sidebar ul li.active a {
-            background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent));
-            color: #fff;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+            color: #ffffff;
             font-weight: 600;
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4);
         }
 
-        #content {
-            margin-left: 260px;
-            padding: 2rem;
-            width: 100%;
+        #sidebar .user-info {
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.25);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
         }
+
+        #sidebar .user-info .user-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            color: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        
+        /* Main Content Styles */
+        #content {
+            width: 100%;
+            margin-left: 280px;
+            padding: 20px;
+            min-height: 100vh;
+            transition: all 0.3s ease-in-out;
+        }
+        
+        #content.active {
+            margin-left: 0;
+        }
+        
+        /* Sidebar Toggle Button */
+        #sidebarCollapse {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: #fff;
+            padding: 10px 15px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+            z-index: 1001;
+        }
+        
+        #sidebarCollapse:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+        }
+
+        /* Stat Cards */
+        .stat-card {
+            background: white;
+            border-radius: var(--card-border-radius);
+            padding: 22px;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+        }
+
+        .stat-card .stat-icon {
+            position: absolute;
+            right: 18px;
+            top: 18px;
+            font-size: 2.8rem;
+            opacity: 0.15;
+            color: #1e293b;
+        }
+
+        .stat-card .stat-label {
+            color: #64748b;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .stat-card .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #0f172a;
+            line-height: 1.2;
+            margin-bottom: 6px;
+        }
+
+        .stat-card .stat-sub {
+            font-size: 0.825rem;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Stat Card Accent Colors */
+        .stat-card.primary { border-top: 4px solid #4f46e5; }
+        .stat-card.success { border-top: 4px solid #10b981; }
+        .stat-card.info { border-top: 4px solid #06b6d4; }
+        .stat-card.warning { border-top: 4px solid #f59e0b; }
+        .stat-card.danger { border-top: 4px solid #ef4444; }
 
         .card-stat {
             background: #fff;
-            border-radius: 1rem;
+            border-radius: var(--card-border-radius);
             padding: 1.5rem;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 999;
+            background: rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+        
+        .overlay.active {
+            display: block;
+            opacity: 0;
+        }
+        
+        @media (max-width: 768px) {
+            #sidebar {
+                left: -280px;
+            }
+            
+            #sidebar.active {
+                left: 0;
+            }
+            
+            #content {
+                margin-left: 0 !important;
+            }
         }
     </style>
 </head>
 
 <body>
     <div class="wrapper">
-        <!-- Sidebar -->
+        <!-- Overlay for mobile -->
+        <div class="overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+        
+        <!-- Left Sidebar Navigation -->
         <nav id="sidebar">
             <div class="sidebar-header">
                 <h3><i class="bi bi-building me-2"></i>WPH Institute</h3>
                 <p><i class="bi bi-geo-alt-fill me-1"></i>Barangay San Francisco</p>
             </div>
+
             <ul class="components">
-                <li class="active"><a href="faculty/adviser_dashboard.html"><i
-                            class="bi bi-speedometer2 me-2"></i>Dashboard</a></li>
-                <!-- <li><a href="../establishment/attendance_approval.html"><i
-                            class="bi bi-calendar-check me-2"></i>Attendance Approvals</a></li>
-                <li><a href="../students/student_dashboard.html"><i class="bi bi-people-fill me-2"></i>Student
-                        Details</a></li>
-                <li><a href="../admin/dashboard.html"><i class="bi bi-gear me-2"></i>Admin Panel</a></li> -->
-                <li><a href="../index.html"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                <li class="active">
+                    <a href="dashboard.html">
+                        <i class="bi bi-speedometer2"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="monitoring.html">
+                        <i class="bi bi-speedometer2"></i>
+                        <span>Student Progress</span>
+                    </a>
+                </li>
             </ul>
+
+            <div class="user-info">
+                <div class="d-flex align-items-center">
+                    <div class="user-avatar me-3">
+                        <i class="bi bi-person-circle"></i>
+                    </div>
+                    <div>
+                        <div class="fw-semibold">Faculty</div>
+                        <small class="text-white"><i class="bi bi-envelope me-1"></i>juan.dc@wphi.edu</small>
+                    </div>
+                    <a href="../index.html" class="ms-auto text-white" title="Logout">
+                        <i class="bi bi-box-arrow-right fs-5"></i>
+                    </a>
+                </div>
+            </div>
         </nav>
+
         <!-- Page Content -->
         <div id="content">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="mb-0"><i class="bi bi-journal-bookmark-fill me-2"></i>Faculty Adviser Dashboard</h2>
-                <div id="currentDateTime"></div>
+                <div class="d-flex align-items-center gap-3">
+                    <button type="button" id="sidebarCollapse" onclick="toggleSidebar()">
+                        <i class="bi bi-list fs-5"></i>
+                    </button>
+                    <h2 class="mb-0 text-white"><i class="bi bi-journal-bookmark-fill me-2"></i>Faculty Adviser Dashboard</h2>
+                </div>
+                <div class="text-white" id="currentDateTime"></div>
             </div>
+
+            <!-- OJT Summary Cards Row -->
+            <div class="row g-3 mb-4">
+                <div class="col-xl-3 col-md-6 col-sm-6">
+                    <div class="stat-card primary">
+                        <i class="bi bi-building stat-icon"></i>
+                        <div class="stat-label">Establishments</div>
+                        <div class="stat-value" id="statEstablishments">6</div>
+                        <div class="stat-sub text-success"><i class="bi bi-check-circle-fill"></i> Active Partners</div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6 col-sm-6">
+                    <div class="stat-card info">
+                        <i class="bi bi-people-fill stat-icon"></i>
+                        <div class="stat-label">Active Students</div>
+                        <div class="stat-value" id="statActiveStudents">121</div>
+                        <div class="stat-sub text-primary"><i class="bi bi-arrow-up-right-circle"></i> Currently Deployed</div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6 col-sm-6">
+                    <div class="stat-card success">
+                        <i class="bi bi-award-fill stat-icon"></i>
+                        <div class="stat-label">Completed OJT</div>
+                        <div class="stat-value" id="statCompletedStudents">28</div>
+                        <div class="stat-sub text-success"><i class="bi bi-patch-check-fill"></i> Hours Requirement Met</div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6 col-sm-6">
+                    <div class="stat-card warning">
+                        <i class="bi bi-hourglass-split stat-icon"></i>
+                        <div class="stat-label">Pending DTRs</div>
+                        <div class="stat-value" id="statPendingDtr">14</div>
+                        <div class="stat-sub text-warning"><i class="bi bi-exclamation-circle-fill"></i> Awaiting Approval</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table Row -->
             <div class="row">
                 <div class="col-lg-12 mb-4">
                     <div class="card-stat">
-                        <h5 class="mb-3">Student Progress by Establishment</h5>
-                        <table class="table table-hover">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Establishment</th>
-                                    <th>Total Students</th>
-                                    <th>Average Attendance %</th>
-                                    <th>Average Hours Completed</th>
-                                </tr>
-                            </thead>
-                            <tbody id="establishmentTableBody">
-                                <!-- Data injected by script -->
-                            </tbody>
-                        </table>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0 fw-bold"><i class="bi bi-bar-chart-line-fill me-2 text-primary"></i>Student Progress by Establishment</h5>
+                            <span class="badge bg-primary-subtle text-primary fw-semibold px-3 py-2 rounded-pill">Real-time Sync</span>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Establishment</th>
+                                        <th>Total Students</th>
+                                        <th>Average Attendance %</th>
+                                        <th>Average Hours Completed</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="establishmentTableBody">
+                                    <!-- Data injected by script -->
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -147,33 +404,54 @@
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Sample data – in a real app this would be fetched from a backend
+        // Toggle Sidebar Functionality
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('content').classList.toggle('active');
+            document.getElementById('sidebarOverlay').classList.toggle('active');
+        }
+
+        // Sample data
         const establishments = [
-            { name: 'Nexus Cloud Technologies', students: 34, attendance: 92, hoursAvg: 380 },
-            { name: 'CyberShield Systems Inc.', students: 26, attendance: 88, hoursAvg: 420 },
-            { name: 'Summit Financial Group', students: 19, attendance: 85, hoursAvg: 350 },
-            { name: 'AeroTech Engineering Works', students: 16, attendance: 90, hoursAvg: 370 },
-            { name: 'SyCip & Associates CPAs', students: 14, attendance: 87, hoursAvg: 360 },
-            { name: 'Grand Regency Hotel & Resort', students: 12, attendance: 80, hoursAvg: 300 }
+            { name: 'Nexus Cloud Technologies', students: 34, attendance: 92, hoursAvg: 380, status: 'Excellent' },
+            { name: 'CyberShield Systems Inc.', students: 26, attendance: 88, hoursAvg: 420, status: 'Good' },
+            { name: 'Summit Financial Group', students: 19, attendance: 85, hoursAvg: 350, status: 'Good' },
+            { name: 'AeroTech Engineering Works', students: 16, attendance: 90, hoursAvg: 370, status: 'Excellent' },
+            { name: 'SyCip & Associates CPAs', students: 14, attendance: 87, hoursAvg: 360, status: 'Good' },
+            { name: 'Grand Regency Hotel & Resort', students: 12, attendance: 80, hoursAvg: 300, status: 'Needs Monitoring' }
         ];
+
         function loadTable() {
             const tbody = document.getElementById('establishmentTableBody');
             let rows = '';
             establishments.forEach(est => {
+                let badgeClass = 'bg-success-subtle text-success';
+                if (est.attendance < 85) badgeClass = 'bg-warning-subtle text-warning';
+
                 rows += `<tr>
-                    <td>${est.name}</td>
-                    <td>${est.students}</td>
-                    <td>${est.attendance}%</td>
+                    <td class="fw-semibold">${est.name}</td>
+                    <td><span class="badge bg-secondary-subtle text-dark">${est.students} Students</span></td>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <span>${est.attendance}%</span>
+                            <div class="progress flex-grow-1" style="height: 6px; min-width: 60px;">
+                                <div class="progress-bar ${est.attendance >= 85 ? 'bg-success' : 'bg-warning'}" style="width: ${est.attendance}%"></div>
+                            </div>
+                        </div>
+                    </td>
                     <td>${est.hoursAvg} hrs</td>
+                    <td><span class="badge ${badgeClass}">${est.status}</span></td>
                 </tr>`;
             });
             tbody.innerHTML = rows;
         }
+
         function updateDateTime() {
             const now = new Date();
             const opts = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
             document.getElementById('currentDateTime').textContent = now.toLocaleDateString(undefined, opts) + ' ' + now.toLocaleTimeString();
         }
+
         document.addEventListener('DOMContentLoaded', () => {
             loadTable();
             updateDateTime();

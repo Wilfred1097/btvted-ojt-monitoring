@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Progress by Establishment - OJT Monitoring</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --primary-hover: #4338ca;
+            --accent-color: #06b6d4;
+            --sidebar-gradient: linear-gradient(180deg, #1e1b4b 0%, #312e81 100%);
+            --card-border-radius: 16px;
+            --transition-speed: 0.25s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%) fixed;
+            background-size: cover;
+            overflow-x: hidden;
+            font-family: 'Plus Jakarta Sans', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            color: #1e293b;
+        }
+
+        /* Sidebar Styles */
+        .wrapper {
+            display: flex;
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        #sidebar {
+            min-width: 280px;
+            max-width: 280px;
+            background: var(--sidebar-gradient);
+            color: #fff;
+            transition: all var(--transition-speed);
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            z-index: 1000;
+            box-shadow: 4px 0 25px rgba(0, 0, 0, 0.25);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #sidebar.active {
+            left: -280px;
+        }
+
+        #sidebar .sidebar-header {
+            padding: 28px 24px;
+            background: rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        #sidebar .sidebar-header h3 {
+            margin-bottom: 6px;
+            font-weight: 700;
+            font-size: 1.35rem;
+            letter-spacing: -0.3px;
+        }
+
+        #sidebar .sidebar-header p {
+            margin-bottom: 0;
+            font-size: 0.825rem;
+            opacity: 0.75;
+        }
+
+        #sidebar ul.components {
+            padding: 20px 12px;
+            list-style: none;
+            margin-bottom: auto;
+        }
+
+        #sidebar ul li {
+            margin-bottom: 6px;
+        }
+
+        #sidebar ul li a {
+            padding: 12px 16px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            color: rgba(255, 255, 255, 0.75);
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all var(--transition-speed);
+        }
+
+        #sidebar ul li a i {
+            margin-right: 14px;
+            font-size: 1.25rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        #sidebar ul li a:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            transform: translateX(4px);
+        }
+
+        #sidebar ul li.active a {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+            color: #ffffff;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4);
+        }
+
+        #sidebar .user-info {
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.25);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        #sidebar .user-info .user-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            color: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        
+        /* Main Content Styles */
+        #content {
+            width: 100%;
+            margin-left: 280px;
+            padding: 20px;
+            min-height: 100vh;
+            transition: all 0.3s ease-in-out;
+        }
+        
+        #content.active {
+            margin-left: 0;
+        }
+        
+        /* Sidebar Toggle Button */
+        #sidebarCollapse {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: #fff;
+            padding: 10px 15px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+            z-index: 1001;
+        }
+        
+        #sidebarCollapse:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+        }
+
+        /* Filter Selector Card */
+        .filter-card {
+            background: #fff;
+            border-radius: var(--card-border-radius);
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Mini Stat Cards */
+        .stat-card {
+            background: white;
+            border-radius: var(--card-border-radius);
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+            border-top: 4px solid var(--primary-color);
+        }
+
+        .stat-card.success { border-top-color: #10b981; }
+        .stat-card.info { border-top-color: #06b6d4; }
+        .stat-card.warning { border-top-color: #f59e0b; }
+
+        .stat-card .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .stat-card .stat-label {
+            color: #64748b;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        /* Card Container */
+        .card-stat {
+            background: #fff;
+            border-radius: var(--card-border-radius);
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 999;
+            background: rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+        
+        .overlay.active {
+            display: block;
+            opacity: 0;
+        }
+
+        .student-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: #475569;
+            margin-right: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            #sidebar {
+                left: -280px;
+            }
+            
+            #sidebar.active {
+                left: 0;
+            }
+            
+            #content {
+                margin-left: 0 !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrapper">
+        <!-- Overlay for mobile -->
+        <div class="overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+        
+        <!-- Left Sidebar Navigation -->
+        <nav id="sidebar">
+            <div class="sidebar-header">
+                <h3><i class="bi bi-building me-2"></i>WPH Institute</h3>
+                <p><i class="bi bi-geo-alt-fill me-1"></i>Barangay San Francisco</p>
+            </div>
+
+            <ul class="components">
+                <li>
+                    <a href="adviser_dashboard.html">
+                        <i class="bi bi-speedometer2"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="active">
+                    <a href="monitoring.html">
+                        <i class="bi bi-people-fill"></i>
+                        <span>Student Progress</span>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="user-info">
+                <div class="d-flex align-items-center">
+                    <div class="user-avatar me-3">
+                        <i class="bi bi-person-circle"></i>
+                    </div>
+                    <div>
+                        <div class="fw-semibold">Faculty</div>
+                        <small class="text-white"><i class="bi bi-envelope me-1"></i>juan.dc@wphi.edu</small>
+                    </div>
+                    <a href="../index.html" class="ms-auto text-white" title="Logout">
+                        <i class="bi bi-box-arrow-right fs-5"></i>
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Page Content -->
+        <div id="content">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="d-flex align-items-center gap-3">
+                    <button type="button" id="sidebarCollapse" onclick="toggleSidebar()">
+                        <i class="bi bi-list fs-5"></i>
+                    </button>
+                    <h2 class="mb-0 text-white"><i class="bi bi-diagram-3-fill me-2"></i>Student Progress by Establishment</h2>
+                </div>
+                <div class="text-white" id="currentDateTime"></div>
+            </div>
+
+            <!-- Filter Card -->
+            <div class="filter-card mb-4">
+                <div class="row align-items-center g-3">
+                    <div class="col-md-6">
+                        <label for="establishmentSelect" class="form-label fw-bold text-dark">
+                            <i class="bi bi-funnel-fill me-1 text-primary"></i> Select Establishment:
+                        </label>
+                        <select class="form-select form-select-lg" id="establishmentSelect" onchange="handleEstablishmentChange()">
+                            <!-- Options injected dynamically -->
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="searchInput" class="form-label fw-bold text-dark">
+                            <i class="bi bi-search me-1 text-primary"></i> Search Student:
+                        </label>
+                        <input type="text" class="form-input form-control form-control-lg" id="searchInput" placeholder="Search by name or student ID..." onkeyup="filterStudents()">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Establishment Dynamic Stats -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <div class="stat-card">
+                        <div class="stat-label">Assigned Students</div>
+                        <div class="stat-value" id="statTotalStudents">0</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="stat-card success">
+                        <div class="stat-label">Completed OJT</div>
+                        <div class="stat-value" id="statCompleted">0</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="stat-card info">
+                        <div class="stat-label">Avg Hours Rendered</div>
+                        <div class="stat-value" id="statAvgHours">0 hrs</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="stat-card warning">
+                        <div class="stat-label">Avg Attendance</div>
+                        <div class="stat-value" id="statAvgAttendance">0%</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Student List Table -->
+            <div class="row">
+                <div class="col-lg-12 mb-4">
+                    <div class="card-stat">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0 fw-bold" id="tableHeaderTitle">
+                                <i class="bi bi-person-lines-fill me-2 text-primary"></i>Student List
+                            </h5>
+                            <span class="badge bg-primary px-3 py-2 rounded-pill" id="studentCountBadge">0 Students</span>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Student ID</th>
+                                        <th>Student Name</th>
+                                        <th>Course / Program</th>
+                                        <th>Supervisor</th>
+                                        <th>Hours Progress</th>
+                                        <th>Attendance Rate</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="studentTableBody">
+                                    <!-- Injected dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Toggle Sidebar Functionality
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('content').classList.toggle('active');
+            document.getElementById('sidebarOverlay').classList.toggle('active');
+        }
+
+        // Mock Database of Establishments and Students
+        const establishmentData = {
+            "est1": {
+                name: "Nexus Cloud Technologies",
+                requiredHours: 400,
+                supervisor: "Engr. Mark Reyes",
+                students: [
+                    { id: "STU-2026-001", name: "Juan Dela Cruz", course: "BS Information Technology", hours: 380, attendance: 95, status: "In Progress" },
+                    { id: "STU-2026-002", name: "Maria Santos", course: "BS Computer Science", hours: 400, attendance: 98, status: "Completed" },
+                    { id: "STU-2026-003", name: "John Doe", course: "BS Information Technology", hours: 310, attendance: 88, status: "In Progress" },
+                    { id: "STU-2026-004", name: "Alyssa Valdez", course: "BS Computer Engineering", hours: 400, attendance: 92, status: "Completed" }
+                ]
+            },
+            "est2": {
+                name: "CyberShield Systems Inc.",
+                requiredHours: 450,
+                supervisor: "Ms. Sarah Jenkins",
+                students: [
+                    { id: "STU-2026-010", name: "Carlos Gutierrez", course: "BS Cybersecurity", hours: 420, attendance: 90, status: "In Progress" },
+                    { id: "STU-2026-011", name: "Bea Alonzo", course: "BS Information Technology", hours: 450, attendance: 96, status: "Completed" },
+                    { id: "STU-2026-012", name: "Gabriel Mercado", course: "BS Computer Science", hours: 220, attendance: 78, status: "In Progress" }
+                ]
+            },
+            "est3": {
+                name: "Summit Financial Group",
+                requiredHours: 350,
+                supervisor: "Mr. Robert Tan",
+                students: [
+                    { id: "STU-2026-020", name: "Patricia Lim", course: "BS Business Administration", hours: 350, attendance: 94, status: "Completed" },
+                    { id: "STU-2026-021", name: "Kenneth Ocampo", course: "BS Accountancy", hours: 290, attendance: 86, status: "In Progress" },
+                    { id: "STU-2026-022", name: "Hannah Ramos", course: "BS Finance", hours: 350, attendance: 100, status: "Completed" }
+                ]
+            },
+            "est4": {
+                name: "Grand Regency Hotel & Resort",
+                requiredHours: 400,
+                supervisor: "Chef Arthur Morgan",
+                students: [
+                    { id: "STU-2026-030", name: "Daniel Padilla", course: "BS Hospitality Management", hours: 280, attendance: 81, status: "In Progress" },
+                    { id: "STU-2026-031", name: "Kathryn Bernardo", course: "BS Hospitality Management", hours: 310, attendance: 83, status: "In Progress" }
+                ]
+            }
+        };
+
+        let currentStudents = [];
+
+        function initDropdown() {
+            const select = document.getElementById('establishmentSelect');
+            select.innerHTML = '';
+            
+            for (const key in establishmentData) {
+                const option = document.createElement('option');
+                option.value = key;
+                option.textContent = establishmentData[key].name;
+                select.appendChild(option);
+            }
+            
+            // Load first establishment by default
+            handleEstablishmentChange();
+        }
+
+        function handleEstablishmentChange() {
+            const selectedKey = document.getElementById('establishmentSelect').value;
+            const data = establishmentData[selectedKey];
+            
+            if (!data) return;
+
+            currentStudents = data.students;
+
+            // Update Header & Badge
+            document.getElementById('tableHeaderTitle').innerHTML = `<i class="bi bi-person-lines-fill me-2 text-primary"></i>Students at ${data.name}`;
+            document.getElementById('studentCountBadge').textContent = `${currentStudents.length} Assigned Students`;
+
+            // Calculate Summary Stats
+            const total = currentStudents.length;
+            const completed = currentStudents.filter(s => s.status === "Completed").length;
+            const avgHours = total ? Math.round(currentStudents.reduce((acc, s) => acc + s.hours, 0) / total) : 0;
+            const avgAttendance = total ? Math.round(currentStudents.reduce((acc, s) => acc + s.attendance, 0) / total) : 0;
+
+            // Update Stats Display
+            document.getElementById('statTotalStudents').textContent = total;
+            document.getElementById('statCompleted').textContent = `${completed} / ${total}`;
+            document.getElementById('statAvgHours').textContent = `${avgHours} / ${data.requiredHours} hrs`;
+            document.getElementById('statAvgAttendance').textContent = `${avgAttendance}%`;
+
+            // Render Table
+            renderStudentTable(currentStudents, data.requiredHours, data.supervisor);
+        }
+
+        function renderStudentTable(students, requiredHours, supervisor) {
+            const tbody = document.getElementById('studentTableBody');
+            
+            if (students.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">No students found matching your criteria.</td></tr>`;
+                return;
+            }
+
+            let html = '';
+            students.forEach(student => {
+                const progressPct = Math.min(100, Math.round((student.hours / requiredHours) * 100));
+                
+                let statusBadge = `<span class="badge bg-primary-subtle text-primary">In Progress</span>`;
+                if (student.status === "Completed") {
+                    statusBadge = `<span class="badge bg-success-subtle text-success"><i class="bi bi-check-circle me-1"></i>Completed</span>`;
+                }
+
+                let attendanceClass = "bg-success";
+                if (student.attendance < 85) attendanceClass = "bg-warning";
+                if (student.attendance < 75) attendanceClass = "bg-danger";
+
+                // Get initials for avatar
+                const initials = student.name.split(' ').map(n => n[0]).join('').substring(0,2);
+
+                html += `
+                    <tr>
+                        <td class="fw-bold text-secondary">${student.id}</td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="student-avatar">${initials}</div>
+                                <span class="fw-semibold">${student.name}</span>
+                            </div>
+                        </td>
+                        <td>${student.course}</td>
+                        <td><small class="text-muted"><i class="bi bi-person-badge me-1"></i>${supervisor}</small></td>
+                        <td style="min-width: 160px;">
+                            <div class="d-flex justify-content-between text-muted fs-7 mb-1">
+                                <span>${student.hours} / ${requiredHours} hrs</span>
+                                <span class="fw-bold">${progressPct}%</span>
+                            </div>
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar ${progressPct === 100 ? 'bg-success' : 'bg-primary'}" style="width: ${progressPct}%"></div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="fw-semibold">${student.attendance}%</span>
+                                <div class="progress flex-grow-1" style="height: 6px; min-width: 50px;">
+                                    <div class="progress-bar ${attendanceClass}" style="width: ${student.attendance}%"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>${statusBadge}</td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = html;
+        }
+
+        function filterStudents() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const selectedKey = document.getElementById('establishmentSelect').value;
+            const data = establishmentData[selectedKey];
+
+            const filtered = currentStudents.filter(student => 
+                student.name.toLowerCase().includes(query) || 
+                student.id.toLowerCase().includes(query) ||
+                student.course.toLowerCase().includes(query)
+            );
+
+            renderStudentTable(filtered, data.requiredHours, data.supervisor);
+        }
+
+        function updateDateTime() {
+            const now = new Date();
+            const opts = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+            document.getElementById('currentDateTime').textContent = now.toLocaleDateString(undefined, opts) + ' ' + now.toLocaleTimeString();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initDropdown();
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
+        });
+    </script>
+</body>
+
+</html>
